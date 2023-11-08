@@ -63,7 +63,6 @@ return require('packer').startup(function(use)
         "kylechui/nvim-surround",
         tag = "*",
         config = function()
-            print("hi")
             require("nvim-surround").setup({
                 keymaps = {
                     insert = "<C-g>s",
