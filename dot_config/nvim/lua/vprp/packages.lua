@@ -28,7 +28,12 @@ return require('packer').startup(function(use)
     use({"nvim-treesitter/nvim-treesitter", run = ":TSUpdate"})
     use("nvim-treesitter/playground")
     use("theprimeagen/harpoon")
-    use("mbbill/undotree")
+    use({
+        "mbbill/undotree",        
+        config = function()
+            vim.keymap.set("n", "<leader>u", vim.cmd.UndotreeToggle)
+        end
+    })
     use {
         'VonHeikemen/lsp-zero.nvim',
         branch = 'v1.x',

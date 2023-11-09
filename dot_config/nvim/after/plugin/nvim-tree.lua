@@ -7,7 +7,10 @@ vim.g.loaded_netrwPlugin = 1
 -- set termguicolors to enable highlight groups
 vim.opt.termguicolors = true
 
-local tree = require("nvim-tree")
+local ok, tree = pcall(require, "nvim-tree")
+if not ok then
+    return
+end
 
 -- setup with some options
 require("nvim-tree").setup({
