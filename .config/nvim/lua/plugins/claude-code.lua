@@ -14,19 +14,17 @@ return {
       },
     })
 
-    -- Switch layout and reopen the window if currently visible
+    -- Switch layout: close first if visible, then always open with new settings
     local function set_layout(position, ratio)
       claude.config.window.position = position
       claude.config.window.split_ratio = ratio
       local instance = claude.claude_code.current_instance
       local bufnr = instance and claude.claude_code.instances[instance]
-      if bufnr then
-        local wins = vim.fn.win_findbuf(bufnr)
-        if #wins > 0 then
-          claude.toggle() -- close
-          claude.toggle() -- reopen with new settings
-        end
+      local is_visible = bufnr and #vim.fn.win_findbuf(bufnr) > 0
+      if is_visible then
+        claude.toggle() -- close
       end
+      claude.toggle() -- open with new settings
     end
 
     vim.api.nvim_create_user_command("ClaudeCodeRight", function()
