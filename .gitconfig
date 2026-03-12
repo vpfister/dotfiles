@@ -1,7 +1,0 @@
-# This is Git's per-user configuration file.
-[user]
-# Please adapt and uncomment the following lines:
-	name = Vincent Pfister
-	email = vincent.pfister@mistral.ai
-[core]
-	editor = nvim
