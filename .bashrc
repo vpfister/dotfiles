@@ -126,5 +126,8 @@ if [[ "$(uname)" == "Linux" ]]; then
   [ -f /usr/share/bash-completion/completions/fzf ] && source /usr/share/bash-completion/completions/fzf
 fi
 
+# direnv
+command -v direnv &>/dev/null && eval "$(direnv hook bash)"
+
 eval "$(starship init bash)"
 . "$HOME/.cargo/env"

@@ -8,6 +8,9 @@ eval "$(uv generate-shell-completion zsh)"
 # Secretive Config
 export SSH_AUTH_SOCK=/Users/vincent.pfister/Library/Containers/com.maxgoedjen.Secretive.SecretAgent/Data/socket.ssh
 
+# direnv
+command -v direnv &>/dev/null && eval "$(direnv hook zsh)"
+
 # starship
 eval "$(starship init zsh)"
 
