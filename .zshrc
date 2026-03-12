@@ -1,6 +1,7 @@
 export PATH="/opt/homebrew/bin:$PATH"
 
 . "$HOME/.local/bin/env"
+[ -f "$HOME/.cargo/env" ] && . "$HOME/.cargo/env"
 autoload -U compinit && compinit
 
 eval "$(uv generate-shell-completion zsh)"

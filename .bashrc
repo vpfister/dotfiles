@@ -131,4 +131,4 @@ command -v direnv &>/dev/null && eval "$(direnv hook bash)"
 command -v direnv &>/dev/null && alias tmux='direnv exec / tmux'
 
 eval "$(starship init bash)"
-. "$HOME/.cargo/env"
+[ -f "$HOME/.cargo/env" ] && . "$HOME/.cargo/env"
