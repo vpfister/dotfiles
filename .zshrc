@@ -21,6 +21,9 @@ bindkey -v
 export ZSH_VI_MODE_CURSOR_BLOCK=1
 export KEYTIMEOUT=1
 
+export EDITOR=nvim
+export VISUAL=nvim
+
 # aliases
 alias ll="ls -al --color=auto"
 alias tailscale=/Applications/Tailscale.app/Contents/MacOS/Tailscale
