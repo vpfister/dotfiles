@@ -1,0 +1,10 @@
+# Secrets
+.env
+
+# Machine-specific
+trusted_folders.toml
+vibehistory
+update_cache.json
+
+# Ephemeral
+logs/
