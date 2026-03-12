@@ -10,6 +10,7 @@ export SSH_AUTH_SOCK=/Users/vincent.pfister/Library/Containers/com.maxgoedjen.Se
 
 # direnv
 command -v direnv &>/dev/null && eval "$(direnv hook zsh)"
+command -v direnv &>/dev/null && alias tmux='direnv exec / tmux'
 
 # starship
 eval "$(starship init zsh)"
