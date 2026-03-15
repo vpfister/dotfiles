@@ -90,6 +90,7 @@ fi
 
 # --- PATH additions ---
 export PATH="$HOME/.local/bin:$PATH"
+[ -d "$HOME/.npm-global/bin" ] && export PATH="$HOME/.npm-global/bin:$PATH"
 
 # --- Editor ---
 export EDITOR=nvim
