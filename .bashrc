@@ -49,7 +49,7 @@ if [[ "$(uname)" == "Linux" ]]; then
 fi
 
 # --- Common aliases ---
-alias ll='ls -alF'
+alias ll='ls -alF --color=auto'
 alias la='ls -A'
 alias l='ls -CF'
 alias dotfiles='git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME'
@@ -91,10 +91,17 @@ fi
 # --- PATH additions ---
 export PATH="$HOME/.local/bin:$PATH"
 [ -d "$HOME/.npm-global/bin" ] && export PATH="$HOME/.npm-global/bin:$PATH"
+[ -f "$HOME/.local/bin/env" ] && . "$HOME/.local/bin/env"
 
 # --- Editor ---
 export EDITOR=nvim
 export VISUAL=nvim
+
+# --- Vi mode ---
+set -o vi
+
+# --- Colors ---
+export LS_COLORS="di=1;36:ln=35:so=32:pi=33:ex=31:bd=34;46:cd=34;43:su=30;41:sg=30;46:tw=30;42:ow=30;43"
 
 # --- Terminal fixes ---
 # Ghostty terminfo fallback
@@ -110,14 +117,19 @@ fi
 # --- macOS-specific ---
 if [[ "$(uname)" == "Darwin" ]]; then
   export SSH_AUTH_SOCK="$HOME/Library/Containers/com.maxgoedjen.Secretive.SecretAgent/Data/socket.ssh"
+  alias tailscale=/Applications/Tailscale.app/Contents/MacOS/Tailscale
+
+  export CLAUDE_CODE_USE_FOUNDRY=1
+  export CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1
+  export ANTHROPIC_FOUNDRY_BASE_URL='https://foundry-proxy.cheetah-koi.ts.net/anthropic'
+  export ANTHROPIC_FOUNDRY_API_KEY='dont-worry-this-key-will-be-auto-injected'
+  export ANTHROPIC_DEFAULT_OPUS_MODEL='claude-opus-4-6'
+  export ANTHROPIC_DEFAULT_SONNET_MODEL='claude-sonnet-4-6'
+  export ANTHROPIC_DEFAULT_HAIKU_MODEL='claude-haiku-4-5'
 fi
 
 # --- Lazygit - Catppuccin Mocha Blue theme ---
-if [[ "$(uname)" == "Darwin" ]]; then
-  export LG_CONFIG_FILE="$HOME/Library/Application Support/lazygit/config.yml,$HOME/.config/lazygit/catppuccin-mocha-blue.yml"
-else
-  export LG_CONFIG_FILE="$HOME/.config/lazygit/config.yml,$HOME/.config/lazygit/catppuccin-mocha-blue.yml"
-fi
+export LG_CONFIG_FILE="$HOME/.config/lazygit/config.yml"
 
 # --- Tool initialization ---
 eval "$(uvx --generate-shell-completion bash)"

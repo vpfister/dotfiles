@@ -1,7 +1,7 @@
-export PATH="/opt/homebrew/bin:$PATH"
+export PATH="/opt/homebrew/bin:$HOME/.local/bin:$PATH"
 [ -d "$HOME/.npm-global/bin" ] && export PATH="$HOME/.npm-global/bin:$PATH"
 
-. "$HOME/.local/bin/env"
+[ -f "$HOME/.local/bin/env" ] && . "$HOME/.local/bin/env"
 [ -f "$HOME/.cargo/env" ] && . "$HOME/.cargo/env"
 autoload -U compinit && compinit
 
@@ -49,8 +49,15 @@ alias dotfiles='git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME'
 command -v lazygit &>/dev/null && alias lgdots='lazygit --git-dir=$HOME/.dotfiles/ --work-tree=$HOME'
 
 # Lazygit - Catppuccin Mocha Blue theme
-if [[ "$(uname)" == "Darwin" ]]; then
-    export LG_CONFIG_FILE="$HOME/Library/Application Support/lazygit/config.yml,$HOME/.config/lazygit/catppuccin-mocha-blue.yml"
-else
-    export LG_CONFIG_FILE="$HOME/.config/lazygit/config.yml,$HOME/.config/lazygit/catppuccin-mocha-blue.yml"
+export LG_CONFIG_FILE="$HOME/.config/lazygit/config.yml"
+
+# --- Terminal fixes ---
+# Ghostty terminfo fallback
+if [ "$TERM" = "xterm-ghostty" ] && ! infocmp xterm-ghostty &>/dev/null; then
+  export TERM=xterm-256color
+fi
+
+# Ensure COLORTERM is set for truecolor support (SSH doesn't forward it)
+if [ -n "$SSH_CONNECTION" ] && [ -z "$COLORTERM" ]; then
+  export COLORTERM=truecolor
 fi
