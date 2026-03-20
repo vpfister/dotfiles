@@ -24,6 +24,7 @@ eval "$(starship init zsh)"
 
 # use vi mode
 bindkey -v
+bindkey '^R' history-incremental-search-backward
 export ZSH_VI_MODE_CURSOR_BLOCK=1
 export KEYTIMEOUT=1
 
