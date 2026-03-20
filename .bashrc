@@ -131,6 +131,18 @@ fi
 # --- Lazygit - Catppuccin Mocha Blue theme ---
 export LG_CONFIG_FILE="$HOME/.config/lazygit/config.yml"
 
+# --- Yazi wrapper (cd on exit) ---
+if command -v yazi &>/dev/null; then
+  function y() {
+    local tmp="$(mktemp -t "yazi-cwd.XXXXXX")"
+    yazi "$@" --cwd-file="$tmp"
+    if cwd="$(cat -- "$tmp")" && [ -n "$cwd" ] && [ "$cwd" != "$PWD" ]; then
+      cd -- "$cwd"
+    fi
+    rm -f -- "$tmp"
+  }
+fi
+
 # --- Tool initialization ---
 eval "$(uvx --generate-shell-completion bash)"
 
