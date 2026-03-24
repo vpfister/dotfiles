@@ -5,22 +5,17 @@ export PATH="/opt/homebrew/bin:$HOME/.local/bin:$PATH"
 [ -f "$HOME/.cargo/env" ] && . "$HOME/.cargo/env"
 autoload -U compinit && compinit
 
-eval "$(uv generate-shell-completion zsh)"
-
-# Secretive Config
-export SSH_AUTH_SOCK=/Users/vincent.pfister/Library/Containers/com.maxgoedjen.Secretive.SecretAgent/Data/socket.ssh
+# --- SSH agent (Secretive on macOS only; .zshrc is macOS-only) ---
+if [ "$(uname)" = "Darwin" ]; then
+  export SSH_AUTH_SOCK="$HOME/Library/Containers/com.maxgoedjen.Secretive.SecretAgent/Data/socket.ssh"
+fi
 
 # direnv
 command -v direnv &>/dev/null && eval "$(direnv hook zsh)"
 command -v direnv &>/dev/null && alias tmux='direnv exec / tmux'
 
-# starship
-eval "$(starship init zsh)"
-
-# tmux autostart
-#if command -v tmux &> /dev/null && [ -z "$TMUX" ]; then
-#    tmux attach -t default || tmux new -s default
-#fi
+# starship (guarded)
+command -v starship &>/dev/null && eval "$(starship init zsh)" || true
 
 # use vi mode
 bindkey -v
@@ -45,7 +40,7 @@ export ANTHROPIC_DEFAULT_OPUS_MODEL='claude-opus-4-6'
 export ANTHROPIC_DEFAULT_SONNET_MODEL='claude-sonnet-4-6'
 export ANTHROPIC_DEFAULT_HAIKU_MODEL='claude-haiku-4-5'
 
-# Dotfiles bare repo management
+# --- Dotfiles bare repo management ---
 alias dotfiles='git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME'
 command -v lazygit &>/dev/null && alias lgdots='lazygit --git-dir=$HOME/.dotfiles/ --work-tree=$HOME'
 
@@ -74,3 +69,6 @@ fi
 if [ -n "$SSH_CONNECTION" ] && [ -z "$COLORTERM" ]; then
   export COLORTERM=truecolor
 fi
+
+# --- Shell completions (guarded) ---
+command -v uv &>/dev/null && eval "$(uv generate-shell-completion zsh)" || true

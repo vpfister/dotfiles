@@ -15,6 +15,9 @@ shopt -s checkwinsize
 
 # --- Linux-specific defaults ---
 if [[ "$(uname)" == "Linux" ]]; then
+  # uv: keep cache on local disk (VAST does not support flock)
+  export UV_CACHE_DIR="/tmp/uv-cache-${USER}"
+
   [ -x /usr/bin/lesspipe ] && eval "$(SHELL=/bin/sh lesspipe)"
 
   # debian chroot indicator
@@ -116,7 +119,9 @@ fi
 
 # --- macOS-specific ---
 if [[ "$(uname)" == "Darwin" ]]; then
+  # SSH agent (Secretive)
   export SSH_AUTH_SOCK="$HOME/Library/Containers/com.maxgoedjen.Secretive.SecretAgent/Data/socket.ssh"
+
   alias tailscale=/Applications/Tailscale.app/Contents/MacOS/Tailscale
 
   export CLAUDE_CODE_USE_FOUNDRY=1
@@ -126,6 +131,13 @@ if [[ "$(uname)" == "Darwin" ]]; then
   export ANTHROPIC_DEFAULT_OPUS_MODEL='claude-opus-4-6'
   export ANTHROPIC_DEFAULT_SONNET_MODEL='claude-sonnet-4-6'
   export ANTHROPIC_DEFAULT_HAIKU_MODEL='claude-haiku-4-5'
+else
+  # Linux/remote: auto-discover forwarded SSH agent socket
+  if [ -z "$SSH_AUTH_SOCK" ] || [ ! -S "$SSH_AUTH_SOCK" ]; then
+    _sock=$(find /tmp/ssh-* -name 'agent.*' -user "$(whoami)" 2>/dev/null | head -1)
+    [ -n "$_sock" ] && [ -S "$_sock" ] && export SSH_AUTH_SOCK="$_sock"
+    unset _sock
+  fi
 fi
 
 # --- Lazygit - Catppuccin Mocha Blue theme ---
@@ -143,8 +155,8 @@ if command -v yazi &>/dev/null; then
   }
 fi
 
-# --- Tool initialization ---
-eval "$(uvx --generate-shell-completion bash)"
+# --- Tool initialization (guarded) ---
+command -v uvx &>/dev/null && eval "$(uvx --generate-shell-completion bash)" || true
 
 # fzf keybindings and completion (Linux)
 if [[ "$(uname)" == "Linux" ]]; then
