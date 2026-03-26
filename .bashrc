@@ -132,12 +132,15 @@ if [[ "$(uname)" == "Darwin" ]]; then
   export ANTHROPIC_DEFAULT_SONNET_MODEL='claude-sonnet-4-6'
   export ANTHROPIC_DEFAULT_HAIKU_MODEL='claude-haiku-4-5'
 else
-  # Linux/remote: auto-discover forwarded SSH agent socket
-  if [ -z "$SSH_AUTH_SOCK" ] || [ ! -S "$SSH_AUTH_SOCK" ]; then
-    _sock=$(find /tmp/ssh-* -name 'agent.*' -user "$(whoami)" 2>/dev/null | head -1)
-    [ -n "$_sock" ] && [ -S "$_sock" ] && export SSH_AUTH_SOCK="$_sock"
-    unset _sock
+  # Linux/remote: pin SSH_AUTH_SOCK to a stable symlink, updated on each login.
+  # Existing shells (tmux, etc.) follow the symlink to the newest forwarded agent.
+  _sock=$(find /tmp/ssh-* -name 'agent.*' -user "$(whoami)" -printf '%T@ %p\n' 2>/dev/null | sort -rn | head -1 | cut -d' ' -f2)
+  if [ -n "$_sock" ] && [ -S "$_sock" ]; then
+    mkdir -p "$HOME/.ssh"
+    ln -sf "$_sock" "$HOME/.ssh/agent.sock"
+    export SSH_AUTH_SOCK="$HOME/.ssh/agent.sock"
   fi
+  unset _sock
 fi
 
 # --- Lazygit - Catppuccin Mocha Blue theme ---

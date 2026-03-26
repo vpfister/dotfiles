@@ -5,9 +5,19 @@ export PATH="/opt/homebrew/bin:$HOME/.local/bin:$PATH"
 [ -f "$HOME/.cargo/env" ] && . "$HOME/.cargo/env"
 autoload -U compinit && compinit
 
-# --- SSH agent (Secretive on macOS only; .zshrc is macOS-only) ---
+# --- SSH agent ---
 if [ "$(uname)" = "Darwin" ]; then
   export SSH_AUTH_SOCK="$HOME/Library/Containers/com.maxgoedjen.Secretive.SecretAgent/Data/socket.ssh"
+else
+  # Linux/remote: pin SSH_AUTH_SOCK to a stable symlink, updated on each login.
+  # Existing shells (tmux, etc.) follow the symlink to the newest forwarded agent.
+  _sock=$(find /tmp/ssh-* -name 'agent.*' -user "$(whoami)" -printf '%T@ %p\n' 2>/dev/null | sort -rn | head -1 | cut -d' ' -f2)
+  if [ -n "$_sock" ] && [ -S "$_sock" ]; then
+    mkdir -p "$HOME/.ssh"
+    ln -sf "$_sock" "$HOME/.ssh/agent.sock"
+    export SSH_AUTH_SOCK="$HOME/.ssh/agent.sock"
+  fi
+  unset _sock
 fi
 
 # direnv
