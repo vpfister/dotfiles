@@ -53,6 +53,7 @@ export ANTHROPIC_DEFAULT_HAIKU_MODEL='claude-haiku-4-5'
 # --- Dotfiles bare repo management ---
 alias dotfiles='git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME'
 command -v lazygit &>/dev/null && alias lgdots='lazygit --git-dir=$HOME/.dotfiles/ --work-tree=$HOME'
+[ -x /mnt/vast/shared/eyeballer_cli/eye ] && alias eye='/mnt/vast/shared/eyeballer_cli/eye'
 
 # Lazygit - Catppuccin Mocha Blue theme
 export LG_CONFIG_FILE="$HOME/.config/lazygit/config.yml"

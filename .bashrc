@@ -57,6 +57,7 @@ alias la='ls -A'
 alias l='ls -CF'
 alias dotfiles='git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME'
 command -v lazygit &>/dev/null && alias lgdots='lazygit --git-dir=$HOME/.dotfiles/ --work-tree=$HOME'
+[ -x /mnt/vast/shared/eyeballer_cli/eye ] && alias eye='/mnt/vast/shared/eyeballer_cli/eye'
 
 if [ -f ~/.bash_aliases ]; then
   . ~/.bash_aliases
