@@ -134,7 +134,6 @@ denylist = []
 permission = "ask"
 allowlist = [
     "echo",
-    "find",
     "git diff",
     "git log",
     "git status",
