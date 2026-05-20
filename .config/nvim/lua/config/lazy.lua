@@ -33,9 +33,10 @@ require("lazy").setup({
   rocks = { enabled = false },
   install = { colorscheme = { "tokyonight", "habamax" } },
   checker = {
-    enabled = true, -- check for plugin updates periodically
-    notify = false, -- notify on update
-  }, -- automatically check for plugin updates
+    enabled = true,
+    notify = false,
+    frequency = 86400, -- once per day (default 3600)
+  },
   performance = {
     rtp = {
       -- disable some rtp plugins

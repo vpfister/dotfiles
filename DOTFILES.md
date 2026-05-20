@@ -110,6 +110,14 @@ dotfiles status       # tracked files with changes
 dotfiles diff         # see the actual diff
 ```
 
+### Before committing
+
+Since `showUntrackedFiles` is set to `no`, newly created files won't appear in `dotfiles status`. Before committing, verify that no required untracked files are missing. Use targeted status checks to surface them:
+
+```bash
+dotfiles status -u <directory>/
+```
+
 ---
 
 ## OS-specific configuration

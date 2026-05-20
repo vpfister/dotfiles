@@ -3,6 +3,12 @@ return {
   dependencies = {
     "nvim-lua/plenary.nvim",
   },
+  cmd = { "ClaudeCode", "ClaudeCodeRight", "ClaudeCodeBottom" },
+  keys = {
+    { "<leader>cc", "<cmd>ClaudeCode<cr>", desc = "Claude Code" },
+    { "<leader>cR", "<cmd>ClaudeCodeRight<CR>", desc = "Claude Code: right panel 50%" },
+    { "<leader>cB", "<cmd>ClaudeCodeBottom<CR>", desc = "Claude Code: bottom-right panel 30%" },
+  },
   config = function()
     local claude = require("claude-code")
 
@@ -35,10 +41,5 @@ return {
       set_layout("botright", 0.3)
     end, { desc = "Claude Code: bottom-right panel 30%" })
 
-    local map_opts = { noremap = true, silent = true }
-    vim.keymap.set("n", "<leader>cR", "<cmd>ClaudeCodeRight<CR>",
-      vim.tbl_extend("force", map_opts, { desc = "Claude Code: right panel 50%" }))
-    vim.keymap.set("n", "<leader>cB", "<cmd>ClaudeCodeBottom<CR>",
-      vim.tbl_extend("force", map_opts, { desc = "Claude Code: bottom-right panel 30%" }))
   end,
 }
