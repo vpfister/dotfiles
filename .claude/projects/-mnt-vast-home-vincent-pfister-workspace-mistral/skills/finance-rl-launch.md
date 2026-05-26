@@ -30,15 +30,45 @@ Must be launched from the worktree that has the `finance_qa` env (currently `~/w
 - **Initial model**: base MS4.1 SFT produces ~21% malformed tool calls at temp=1.0. Always use a tool-use SFT checkpoint.
 - **`swestral-rex`**: main occasionally breaks with import errors. Always rebase before launching.
 
-## DANGER: --override_run_dir erases checkpoints
+## Resuming from a checkpoint
 
-`--override_run_dir True` **wipes the entire run directory** including all checkpoints and generation logs. It restarts from step 0 with the initial model. There is NO way to recover.
+The trainer auto-resumes from the latest checkpoint in `<run_dir>/checkpoints/` at startup
+(`load_latest_checkpoint()` in `mistral/checkpointing/checkpointing_utils.py`).
+The key is to **preserve the run dir** when relaunching.
 
-**Before using --override_run_dir**, always check:
-1. Are there checkpoints worth keeping? `ls <run_dir>/checkpoints/`
-2. Can you resume instead? Try `train_online.py relaunch --run_dir <run_dir>` first.
+### Safe resume: `relaunch`
 
-`relaunch` preserves checkpoints but may fail if field names changed on main (e.g. `data_config_path` → `data_config`). In that case, there is currently no safe way to resume — you must accept restarting from step 0.
+```bash
+uv run --frozen python train_online.py relaunch --run_dir <run_dir>
+```
+
+This preserves checkpoints, reuses the existing code snapshot and args, and submits a new
+SLURM job as a dependency of the crashed one. The trainer finds existing checkpoints and
+resumes from the latest step.
+
+**If field names changed on main** (e.g. `data_config_path` → `data_config`), relaunch will
+fail because it reads the old `args.yaml`. Fix with `--update_args`:
+
+```bash
+uv run --frozen python train_online.py relaunch \
+  --run_dir <run_dir> \
+  --new_code True \
+  --update_args '{"orchestral_data_loader.data_config": "orchestral_package/configs/finance_qa_multi.yaml", "orchestral_tokenization.data_config": "orchestral_package/configs/finance_qa_multi.yaml"}'
+```
+
+- `--new_code True`: copies fresh code from the worktree (new venv), keeps checkpoints.
+- `--update_args`: patches the saved override.yaml with new/renamed fields.
+
+### DANGER: --override_run_dir erases checkpoints
+
+`--override_run_dir True` calls `move_to_trash()` on the **entire experiment directory**
+including all checkpoints, generation logs, and code snapshots. It restarts from step 0
+with the initial model. There is NO way to recover.
+
+**Before using --override_run_dir**, always:
+1. Check for checkpoints: `ls <run_dir>/checkpoints/`
+2. Try `relaunch` first (with `--update_args` if needed).
+3. Only use `--override_run_dir` if you genuinely want a fresh start.
 
 ## Monitoring a running job
 
