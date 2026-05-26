@@ -23,11 +23,7 @@ tool_paths = []
 name = "edgartools"
 transport = "stdio"
 command = "uvx"
-args = [
-    "--from",
-    "edgartools[ai]",
-    "edgartools-mcp",
-]
+args = ["--from", "edgartools[ai]", "edgartools-mcp"]
 enabled_tools = []
 disabled_tools = []
 agent_paths = []
@@ -70,11 +66,11 @@ backend = "generic"
 [[models]]
 name = "mistral-vibe-cli-latest"
 provider = "mistral"
-alias = "devstral-2"
-temperature = 0.2
-input_price = 0.4
-output_price = 2.0
-thinking = "off"
+alias = "mistral-medium-3.5"
+temperature = 1.0
+input_price = 1.5
+output_price = 7.5
+thinking = "high"
 
 [[models]]
 name = "devstral-small-latest"
@@ -133,53 +129,54 @@ denylist = []
 [tools.bash]
 permission = "ask"
 allowlist = [
-    "echo",
-    "git diff",
-    "git log",
-    "git status",
-    "tree",
-    "whoami",
-    "cat",
-    "file",
-    "head",
-    "ls",
-    "pwd",
-    "stat",
-    "tail",
-    "uname",
-    "wc",
-    "which",
+  "cat",
+  "echo",
+  "file",
+  "find",
+  "git diff",
+  "git log",
+  "git status",
+  "head",
+  "ls",
+  "pwd",
+  "stat",
+  "tail",
+  "tree",
+  "uname",
+  "wc",
+  "which",
+  "whoami",
 ]
 denylist = [
-    "gdb",
-    "pdb",
-    "passwd",
-    "nano",
-    "vim",
-    "vi",
-    "emacs",
-    "bash -i",
-    "sh -i",
-    "zsh -i",
-    "fish -i",
-    "dash -i",
-    "screen",
-    "tmux",
+  "gdb",
+  "pdb",
+  "passwd",
+  "nano",
+  "vim",
+  "vi",
+  "emacs",
+  "bash -i",
+  "sh -i",
+  "zsh -i",
+  "fish -i",
+  "dash -i",
+  "screen",
+  "tmux",
 ]
 max_output_bytes = 16000
 default_timeout = 300
 denylist_standalone = [
-    "python",
-    "python3",
-    "ipython",
-    "bash",
-    "sh",
-    "nohup",
-    "vi",
-    "vim",
-    "emacs",
-    "nano",
-    "su",
+  "python",
+  "python3",
+  "ipython",
+  "bash",
+  "sh",
+  "nohup",
+  "vi",
+  "vim",
+  "emacs",
+  "nano",
+  "su",
 ]
 
 [tools.grep]
@@ -190,29 +187,29 @@ max_output_bytes = 64000
 default_max_matches = 100
 default_timeout = 60
 exclude_patterns = [
-    ".venv/",
-    "venv/",
-    ".env/",
-    "env/",
-    "node_modules/",
-    ".git/",
-    "__pycache__/",
-    ".pytest_cache/",
-    ".mypy_cache/",
-    ".tox/",
-    ".nox/",
-    ".coverage/",
-    "htmlcov/",
-    "dist/",
-    "build/",
-    ".idea/",
-    ".vscode/",
-    "*.egg-info",
-    "*.pyc",
-    "*.pyo",
-    "*.pyd",
-    ".DS_Store",
-    "Thumbs.db",
+  ".venv/",
+  "venv/",
+  ".env/",
+  "env/",
+  "node_modules/",
+  ".git/",
+  "__pycache__/",
+  ".pytest_cache/",
+  ".mypy_cache/",
+  ".tox/",
+  ".nox/",
+  ".coverage/",
+  "htmlcov/",
+  "dist/",
+  "build/",
+  ".idea/",
+  ".vscode/",
+  "*.egg-info",
+  "*.pyc",
+  "*.pyo",
+  "*.pyd",
+  ".DS_Store",
+  "Thumbs.db",
 ]
 codeignore_file = ".vibeignore"
 
@@ -232,9 +229,7 @@ fuzzy_threshold = 0.9
 
 [tools.task]
 permission = "ask"
-allowlist = [
-    "explore",
-]
+allowlist = ["explore"]
 denylist = []
 
 [tools.todo]
