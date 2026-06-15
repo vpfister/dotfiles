@@ -1,3 +1,4 @@
 # Machine-local secrets — never commit
 .secrets
 .netrc
+.env
