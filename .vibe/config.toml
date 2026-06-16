@@ -18,12 +18,19 @@ enable_auto_update = true
 enable_notifications = true
 api_timeout = 720.0
 tool_paths = []
+applied_migrations = [
+    "bash_read_only_defaults_v1",
+]
 
 [[mcp_servers]]
 name = "edgartools"
 transport = "stdio"
 command = "uvx"
-args = ["--from", "edgartools[ai]", "edgartools-mcp"]
+args = [
+    "--from",
+    "edgartools[ai]",
+    "edgartools-mcp",
+]
 enabled_tools = []
 disabled_tools = []
 agent_paths = []
@@ -71,6 +78,7 @@ temperature = 1.0
 input_price = 1.5
 output_price = 7.5
 thinking = "high"
+supports_images = true
 
 [[models]]
 name = "devstral-small-latest"
@@ -129,54 +137,81 @@ denylist = []
 [tools.bash]
 permission = "ask"
 allowlist = [
-  "cat",
-  "echo",
-  "file",
-  "find",
-  "git diff",
-  "git log",
-  "git status",
-  "head",
-  "ls",
-  "pwd",
-  "stat",
-  "tail",
-  "tree",
-  "uname",
-  "wc",
-  "which",
-  "whoami",
+    "/mnt/vast/datasets_raw/val_eur/karl_ml4_sft/data_hunter_output/*",
+    "basename",
+    "cat",
+    "comm",
+    "cut",
+    "date",
+    "diff",
+    "dirname",
+    "du",
+    "echo",
+    "file",
+    "find",
+    "fmt",
+    "fold",
+    "git diff",
+    "git log",
+    "git status",
+    "grep",
+    "head",
+    "join",
+    "less",
+    "ls",
+    "md5sum",
+    "more",
+    "nl",
+    "od",
+    "paste",
+    "pwd",
+    "readlink",
+    "sha1sum",
+    "sha256sum",
+    "shasum",
+    "sort",
+    "stat",
+    "sum",
+    "tac",
+    "tail",
+    "tr",
+    "tree",
+    "uname",
+    "uniq",
+    "wc",
+    "which",
+    "whoami",
 ]
 denylist = [
-  "gdb",
-  "pdb",
-  "passwd",
-  "nano",
-  "vim",
-  "vi",
-  "emacs",
-  "bash -i",
-  "sh -i",
-  "zsh -i",
-  "fish -i",
-  "dash -i",
-  "screen",
-  "tmux",
+    "gdb",
+    "pdb",
+    "passwd",
+    "nano",
+    "vim",
+    "vi",
+    "emacs",
+    "bash -i",
+    "sh -i",
+    "zsh -i",
+    "fish -i",
+    "dash -i",
+    "screen",
+    "tmux",
 ]
 max_output_bytes = 16000
 default_timeout = 300
 denylist_standalone = [
-  "python",
-  "python3",
-  "ipython",
-  "bash",
-  "sh",
-  "nohup",
-  "vi",
-  "vim",
-  "emacs",
-  "nano",
-  "su",
+    "python",
+    "python3",
+    "ipython",
+    "bash",
+    "sh",
+    "nohup",
+    "vi",
+    "vim",
+    "emacs",
+    "nano",
+    "su",
 ]
 
 [tools.grep]
@@ -187,49 +222,37 @@ max_output_bytes = 64000
 default_max_matches = 100
 default_timeout = 60
 exclude_patterns = [
-  ".venv/",
-  "venv/",
-  ".env/",
-  "env/",
-  "node_modules/",
-  ".git/",
-  "__pycache__/",
-  ".pytest_cache/",
-  ".mypy_cache/",
-  ".tox/",
-  ".nox/",
-  ".coverage/",
-  "htmlcov/",
-  "dist/",
-  "build/",
-  ".idea/",
-  ".vscode/",
-  "*.egg-info",
-  "*.pyc",
-  "*.pyo",
-  "*.pyd",
-  ".DS_Store",
-  "Thumbs.db",
+    ".venv/",
+    "venv/",
+    ".env/",
+    "env/",
+    "node_modules/",
+    ".git/",
+    "__pycache__/",
+    ".pytest_cache/",
+    ".mypy_cache/",
+    ".tox/",
+    ".nox/",
+    ".coverage/",
+    "htmlcov/",
+    "dist/",
+    "build/",
+    ".idea/",
+    ".vscode/",
+    "*.egg-info",
+    "*.pyc",
+    "*.pyo",
+    "*.pyd",
+    ".DS_Store",
+    "Thumbs.db",
 ]
 codeignore_file = ".vibeignore"
 
-[tools.read_file]
-permission = "always"
-allowlist = []
-denylist = []
-max_read_bytes = 64000
-
-[tools.search_replace]
-permission = "ask"
-allowlist = []
-denylist = []
-max_content_size = 100000
-create_backup = false
-fuzzy_threshold = 0.9
-
 [tools.task]
 permission = "ask"
-allowlist = ["explore"]
+allowlist = [
+    "explore",
+]
 denylist = []
 
 [tools.todo]
@@ -260,3 +283,15 @@ allowlist = []
 denylist = []
 max_write_bytes = 64000
 create_parent_dirs = true
+
+[tools.read]
+permission = "always"
+allowlist = []
+denylist = []
+max_read_bytes = 64000
+
+[tools.edit]
+permission = "ask"
+allowlist = []
+denylist = []
+fuzzy_threshold = 0.9
