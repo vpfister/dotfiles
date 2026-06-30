@@ -138,6 +138,7 @@ denylist = []
 permission = "ask"
 allowlist = [
     "/mnt/vast/datasets_raw/val_eur/karl_ml4_sft/data_hunter_output/*",
+    "/mnt/vast/home/vincent.pfister/.vibe/*",
     "basename",
     "cat",
     "comm",

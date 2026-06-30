@@ -9,6 +9,12 @@
 - Never add co-author lines (e.g. `Co-Authored-By: Claude`) to commit messages.
 - Never mention Claude authorship or AI assistance in PR titles, PR bodies, code comments, READMEs, or any other documentation.
 
+## Searching the monorepo
+
+- Avoid broad, repo-wide searches in the mistral monorepo — they are slow and noisy.
+- Always exclude virtualenvs: the root `.venv` and any sub-project `.venv`/`venv`/`site-packages` directories, in both greps and finds.
+- Scope searches to the relevant sub-project or directory whenever possible. Prefer `rg` with explicit path scoping and glob excludes, e.g. `rg PATTERN path/ --glob '!**/.venv/**' --glob '!**/site-packages/**'`.
+
 ## Worktree conventions
 
 The mistral monorepo uses git worktrees for parallel branch development:

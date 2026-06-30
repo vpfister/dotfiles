@@ -152,32 +152,34 @@ fi
 export LG_CONFIG_FILE="$HOME/.config/lazygit/config.yml"
 
 # --- Yazi wrapper (cd on exit) ---
-if command -v yazi &>/dev/null; then
-  function y() {
-    local tmp="$(mktemp -t "yazi-cwd.XXXXXX")"
-    yazi "$@" --cwd-file="$tmp"
-    if cwd="$(cat -- "$tmp")" && [ -n "$cwd" ] && [ "$cwd" != "$PWD" ]; then
-      cd -- "$cwd"
-    fi
-    rm -f -- "$tmp"
-  }
-fi
+#if command -v yazi &>/dev/null; then
+#  function y() {
+#    local tmp="$(mktemp -t "yazi-cwd.XXXXXX")"
+#    yazi "$@" --cwd-file="$tmp"
+#    if cwd="$(cat -- "$tmp")" && [ -n "$cwd" ] && [ "$cwd" != "$PWD" ]; then
+#      cd -- "$cwd"
+#    fi
+#    rm -f -- "$tmp"
+#  }
+#fi
 
 # --- Tool initialization (guarded) ---
 command -v uvx &>/dev/null && eval "$(uvx --generate-shell-completion bash)" || true
 
 # fzf keybindings and completion (Linux)
-if [[ "$(uname)" == "Linux" ]]; then
-  [ -f /usr/share/doc/fzf/examples/key-bindings.bash ] && source /usr/share/doc/fzf/examples/key-bindings.bash
-  [ -f /usr/share/bash-completion/completions/fzf ] && source /usr/share/bash-completion/completions/fzf
-fi
+#if [[ "$(uname)" == "Linux" ]]; then
+#  [ -f /usr/share/doc/fzf/examples/key-bindings.bash ] && source /usr/share/doc/fzf/examples/key-bindings.bash
+#  [ -f /usr/share/bash-completion/completions/fzf ] && source /usr/share/bash-completion/completions/fzf
+#fi
 
 # direnv
-command -v direnv &>/dev/null && eval "$(direnv hook bash)"
-command -v direnv &>/dev/null && alias tmux='direnv exec / tmux'
+#command -v direnv &>/dev/null && eval "$(direnv hook bash)"
+#command -v direnv &>/dev/null && alias tmux='direnv exec / tmux'
 
-eval "$(starship init bash)"
 [ -f "$HOME/.cargo/env" ] && . "$HOME/.cargo/env"
+if command -v starship >/dev/null 2>&1; then
+  eval "$(starship init bash)"
+fi
 
 # Machine-local secrets (API keys, credentials) — not tracked by dotfiles
 [ -f "$HOME/.secrets" ] && . "$HOME/.secrets"
