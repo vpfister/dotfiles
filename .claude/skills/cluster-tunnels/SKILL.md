@@ -9,9 +9,10 @@ Clusters that can't reach each other directly are bridged through the **laptop**
 
 **Topology**
 ```
-source(rno):<rport>  --(-R)-->  laptop:<lport>  --(-L)-->  dest:22
+source(rno):<rport>  --(-R)-->  laptop:<lport>  --(-L)-->  dest:22   # reach a dest
+source(rno):<rport>  --(-R)-->  laptop:22                            # reach the laptop ("mac")
 ```
-Currently wired: `rno -> ala0` and `rno -> bar0`.
+Currently wired: `rno -> ala0`, `rno -> bar0`, and `rno -> mac` (the laptop itself).
 
 **Full reference / history:** Notion page *"SSH Tunnel Between Two Clusters (rno ↔ ala0) via Laptop"* — https://app.notion.com/p/3876ba59a7fe81ceb95cce8f48ef7c7d
 
@@ -71,6 +72,25 @@ rsync -avz ./dir/ ala0:~/dir/           # rsync over the tunnel
 ssh bar0 'hostname'                     # same for bar0
 ```
 `ControlPersist` keeps the master warm, so repeated commands reuse one connection (≈ one Touch ID per 60-min window per host).
+
+## Reach the laptop from a cluster (host `mac`)
+
+Same reverse leg, but pointed at the laptop's **own sshd** instead of a destination: `source:<port> -> laptop:22`. It's enabled by `EXPOSE_LAPTOP_PORT` at the top of the script (rides on the same reverse connection to the source) and adds a `Host mac` block to the printed config. From the source cluster:
+```
+ssh mac 'pbpaste'               # run a command on the laptop
+ssh mac 'open -a Safari'        # drive laptop-only tools
+scp ./file mac:~/Downloads/     # copy to the laptop
+```
+
+**Two one-time prerequisites on the Mac** (cannot be done from the cluster):
+
+1. **Enable the SSH server:** System Settings -> General -> Sharing -> **Remote Login = On** (or `sudo systemsetup -setremotelogin on`). macOS has no sshd running by default.
+2. **Authorize the forwarded key:** the source authenticates using the agent-forwarded Secure-Enclave key, so that key's *public* half must be in the Mac's `~/.ssh/authorized_keys`:
+   ```
+   ssh-add -L >> ~/.ssh/authorized_keys        # on the laptop (keep only your Secretive line)
+   chmod 700 ~/.ssh && chmod 600 ~/.ssh/authorized_keys
+   ```
+   `ssh mac` from the source then prompts Touch ID (signing with that key) and lands on the laptop. Requires the source login to have agent forwarding (`ssh -A` / `ForwardAgent yes`), which the existing setup already uses.
 
 ## Gotchas (hard-won)
 

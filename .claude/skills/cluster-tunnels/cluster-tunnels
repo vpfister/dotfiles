@@ -1,11 +1,12 @@
 #!/usr/bin/env zsh
 #
 # cluster-tunnels — open laptop-relayed SSH tunnels so a "source" cluster
-# can reach destination clusters it cannot route to directly. The laptop is
-# the pivot:
+# can reach destination clusters it cannot route to directly, and (optionally)
+# reach the laptop itself. The laptop is the pivot:
 #
 #     laptop  --(-L)-->  dest:22                       (one per destination)
 #     source  --(-R)-->  laptop  --(-L)-->  dest:22    (reach dest from source)
+#     source  --(-R)-->  laptop:22                     (reach the LAPTOP from source, host "mac")
 #
 # Usage:
 #   cluster-tunnels [up|down|status|config]
@@ -32,6 +33,17 @@ DESTINATIONS=(
   "ala0  2200  12222"
   "bar0  2201  12223"
 )
+
+# Expose the laptop's OWN sshd back to the source, so the source can
+# `ssh $MAC_HOST` into the laptop. This is just the reverse leg pointed at
+# laptop:22 instead of at a destination.
+#   Requires on the Mac: Remote Login enabled (System Settings > General >
+#   Sharing > Remote Login), and the forwarded key's public key present in
+#   ~/.ssh/authorized_keys (so the agent-forwarded key authenticates back).
+# Leave EXPOSE_LAPTOP_PORT empty ("") to disable.
+EXPOSE_LAPTOP_PORT="12224"     # port on SOURCE_HOST that maps back to laptop:22
+MAC_HOST="mac"                 # ssh alias created on the source
+MAC_USER="vincent.pfister"     # your username on the Mac
 
 # Dedicated control sockets for this script (kept separate from your
 # interactive masters so they can be managed independently).
@@ -84,6 +96,10 @@ up() {
     local parts=(${=entry}); local lport=$parts[2] rport=$parts[3]
     rflags+=(-R "127.0.0.1:${rport}:127.0.0.1:${lport}")
   done
+  # optional: expose the laptop's own sshd back to the source as host "mac"
+  if [[ -n "$EXPOSE_LAPTOP_PORT" ]]; then
+    rflags+=(-R "127.0.0.1:${EXPOSE_LAPTOP_PORT}:127.0.0.1:22")
+  fi
   local tag="R-$SOURCE_HOST"
   if _is_up "$tag" "$SOURCE_HOST"; then
     print -r -- "  already up: $tag"
@@ -102,7 +118,7 @@ down() {
 
 status() {
   if _is_up "R-$SOURCE_HOST" "$SOURCE_HOST"; then
-    print -r -- "  UP    R-$SOURCE_HOST"
+    print -r -- "  UP    R-$SOURCE_HOST${EXPOSE_LAPTOP_PORT:+  (carries dests + $MAC_HOST)}"
   else
     print -r -- "  DOWN  R-$SOURCE_HOST"
   fi
@@ -116,22 +132,29 @@ status() {
   done
 }
 
+_print_host_block() {  # host port user alias
+  print -r -- ""
+  print -r -- "Host $1"
+  print -r -- "    HostName 127.0.0.1"
+  print -r -- "    Port $2"
+  print -r -- "    User $3"
+  print -r -- "    HostKeyAlias $4"
+  print -r -- "    StrictHostKeyChecking accept-new"
+  print -r -- "    ControlMaster auto"
+  print -r -- "    ControlPath ~/.ssh/sockets/%C"
+  print -r -- "    ControlPersist 60m"
+}
+
 print_config() {
   print -r -- "# ===== add to ~/.ssh/config on $SOURCE_HOST ====="
   print -r -- "# one-time on $SOURCE_HOST:  mkdir -p ~/.ssh/sockets && chmod 700 ~/.ssh/sockets"
   for entry in $DESTINATIONS; do
     local parts=(${=entry}); local name=$parts[1] rport=$parts[3]
-    print -r -- ""
-    print -r -- "Host $name"
-    print -r -- "    HostName 127.0.0.1"
-    print -r -- "    Port $rport"
-    print -r -- "    User $DEST_USER"
-    print -r -- "    HostKeyAlias $name-via-tunnel"
-    print -r -- "    StrictHostKeyChecking accept-new"
-    print -r -- "    ControlMaster auto"
-    print -r -- "    ControlPath ~/.ssh/sockets/%C"
-    print -r -- "    ControlPersist 60m"
+    _print_host_block "$name" "$rport" "$DEST_USER" "$name-via-tunnel"
   done
+  if [[ -n "$EXPOSE_LAPTOP_PORT" ]]; then
+    _print_host_block "$MAC_HOST" "$EXPOSE_LAPTOP_PORT" "$MAC_USER" "mac-via-tunnel"
+  fi
 }
 
 case "${1:-up}" in
