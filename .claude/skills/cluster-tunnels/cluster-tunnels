@@ -1,0 +1,143 @@
+#!/usr/bin/env zsh
+#
+# cluster-tunnels — open laptop-relayed SSH tunnels so a "source" cluster
+# can reach destination clusters it cannot route to directly. The laptop is
+# the pivot:
+#
+#     laptop  --(-L)-->  dest:22                       (one per destination)
+#     source  --(-R)-->  laptop  --(-L)-->  dest:22    (reach dest from source)
+#
+# Usage:
+#   cluster-tunnels [up|down|status|config]
+#     up      open all tunnels (default), then print the source-side ssh config
+#     down    close all tunnels opened by this script
+#     status  show whether each tunnel is alive
+#     config  just print the source-side ~/.ssh/config block
+#
+set -euo pipefail
+
+# ============================ Configuration ============================
+
+# The cluster you want to initiate connections FROM.
+SOURCE_HOST="rno"
+
+# Your username on the destination clusters (used only in the printed config).
+DEST_USER="vincent.pfister"
+
+# Destinations reachable from the laptop.
+# Each entry: "<ssh-host>  <laptop_local_port>  <source_remote_port>"
+#   laptop_local_port  : port on the laptop for the -L forward to <ssh-host>:22
+#   source_remote_port : port on SOURCE_HOST that maps back to <ssh-host>
+DESTINATIONS=(
+  "ala0  2200  12222"
+  "bar0  2201  12223"
+)
+
+# Dedicated control sockets for this script (kept separate from your
+# interactive masters so they can be managed independently).
+SOCKET_DIR="$HOME/.ssh/sockets/tunnels"
+
+# Options shared by every tunnel master connection.
+SSH_COMMON=(
+  -o ExitOnForwardFailure=yes      # fail loudly if a forward can't bind
+  -o ServerAliveInterval=30
+  -o ServerAliveCountMax=3
+  -o ControlMaster=yes
+  -o ControlPersist=yes            # stay up until `down`; survives the shell
+)
+
+# =======================================================================
+
+mkdir -p "$SOCKET_DIR"; chmod 700 "$SOCKET_DIR"
+
+_sock()  { print -r -- "$SOCKET_DIR/$1"; }
+
+_is_up() {  # tag host
+  ssh -O check -o ControlPath="$(_sock "$1")" "$2" >/dev/null 2>&1
+}
+
+_stop()  {  # tag host
+  if _is_up "$1" "$2"; then
+    ssh -O exit -o ControlPath="$(_sock "$1")" "$2" >/dev/null 2>&1 || true
+    print -r -- "  closed:    $1 ($2)"
+  fi
+  rm -f "$(_sock "$1")"
+}
+
+up() {
+  # 1) local forwards: laptop -> each destination
+  for entry in $DESTINATIONS; do
+    local parts=(${=entry}); local name=$parts[1] lport=$parts[2]
+    local tag="L-$name"
+    if _is_up "$tag" "$name"; then
+      print -r -- "  already up: $tag"
+    else
+      print -r -- "  opening:   laptop:$lport -> $name:22   (Touch ID may prompt)"
+      ssh -f -N $SSH_COMMON -o ControlPath="$(_sock "$tag")" \
+        -L "127.0.0.1:${lport}:localhost:22" "$name"
+    fi
+  done
+
+  # 2) one reverse connection to SOURCE carrying every -R forward
+  local rflags=()
+  for entry in $DESTINATIONS; do
+    local parts=(${=entry}); local lport=$parts[2] rport=$parts[3]
+    rflags+=(-R "127.0.0.1:${rport}:127.0.0.1:${lport}")
+  done
+  local tag="R-$SOURCE_HOST"
+  if _is_up "$tag" "$SOURCE_HOST"; then
+    print -r -- "  already up: $tag"
+  else
+    print -r -- "  opening:   $SOURCE_HOST reverse forwards   (Touch ID may prompt)"
+    ssh -f -N $SSH_COMMON -o ControlPath="$(_sock "$tag")" $rflags "$SOURCE_HOST"
+  fi
+}
+
+down() {
+  _stop "R-$SOURCE_HOST" "$SOURCE_HOST"
+  for entry in $DESTINATIONS; do
+    local parts=(${=entry}); _stop "L-$parts[1]" "$parts[1]"
+  done
+}
+
+status() {
+  if _is_up "R-$SOURCE_HOST" "$SOURCE_HOST"; then
+    print -r -- "  UP    R-$SOURCE_HOST"
+  else
+    print -r -- "  DOWN  R-$SOURCE_HOST"
+  fi
+  for entry in $DESTINATIONS; do
+    local parts=(${=entry}); local name=$parts[1]
+    if _is_up "L-$name" "$name"; then
+      print -r -- "  UP    L-$name"
+    else
+      print -r -- "  DOWN  L-$name"
+    fi
+  done
+}
+
+print_config() {
+  print -r -- "# ===== add to ~/.ssh/config on $SOURCE_HOST ====="
+  print -r -- "# one-time on $SOURCE_HOST:  mkdir -p ~/.ssh/sockets && chmod 700 ~/.ssh/sockets"
+  for entry in $DESTINATIONS; do
+    local parts=(${=entry}); local name=$parts[1] rport=$parts[3]
+    print -r -- ""
+    print -r -- "Host $name"
+    print -r -- "    HostName 127.0.0.1"
+    print -r -- "    Port $rport"
+    print -r -- "    User $DEST_USER"
+    print -r -- "    HostKeyAlias $name-via-tunnel"
+    print -r -- "    StrictHostKeyChecking accept-new"
+    print -r -- "    ControlMaster auto"
+    print -r -- "    ControlPath ~/.ssh/sockets/%C"
+    print -r -- "    ControlPersist 60m"
+  done
+}
+
+case "${1:-up}" in
+  up)     up; print -r -- ""; print_config ;;
+  down)   down ;;
+  status) status ;;
+  config) print_config ;;
+  *)      print -r -- "usage: ${0:t} [up|down|status|config]" >&2; exit 2 ;;
+esac

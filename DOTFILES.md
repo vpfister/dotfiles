@@ -110,6 +110,14 @@ dotfiles status       # tracked files with changes
 dotfiles diff         # see the actual diff
 ```
 
+### Before committing
+
+Since `showUntrackedFiles` is set to `no`, newly created files won't appear in `dotfiles status`. Before committing, verify that no required untracked files are missing. Use targeted status checks to surface them:
+
+```bash
+dotfiles status -u <directory>/
+```
+
 ---
 
 ## OS-specific configuration
@@ -137,6 +145,32 @@ if vim.fn.has("mac") == 1 then
     -- macOS-specific
 end
 ```
+
+---
+
+## Rust toolchain (rustup / cargo)
+
+Rust is installed per-user via [rustup](https://rustup.rs), independent of any system packages.
+Everything lives under `~/.rustup/` (toolchains) and `~/.cargo/` (binaries, registry).
+
+### Install on a new machine
+
+```bash
+# Install rustup + stable toolchain (non-interactive)
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+
+# Source in the current shell
+. "$HOME/.cargo/env"
+
+# (Optional) Extra cargo binaries
+cargo install starship --locked
+cargo install ripgrep fd-find bat --locked
+cargo install slurmer tree-sitter-cli
+```
+
+The installer adds `. "$HOME/.cargo/env"` to shell configs, which prepends `~/.cargo/bin` to `$PATH` so user-installed Rust takes precedence over any system version.
+
+The dotfiles already source `~/.cargo/env` in `.bashrc`, `.profile`, and `.zshrc`, so after `dotfiles checkout` you only need the `curl` + `cargo install` steps above.
 
 ---
 

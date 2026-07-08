@@ -18,6 +18,9 @@ enable_auto_update = true
 enable_notifications = true
 api_timeout = 720.0
 tool_paths = []
+applied_migrations = [
+    "bash_read_only_defaults_v1",
+]
 
 [[mcp_servers]]
 name = "edgartools"
@@ -70,11 +73,12 @@ backend = "generic"
 [[models]]
 name = "mistral-vibe-cli-latest"
 provider = "mistral"
-alias = "devstral-2"
-temperature = 0.2
-input_price = 0.4
-output_price = 2.0
-thinking = "off"
+alias = "mistral-medium-3.5"
+temperature = 1.0
+input_price = 1.5
+output_price = 7.5
+thinking = "high"
+supports_images = true
 
 [[models]]
 name = "devstral-small-latest"
@@ -133,23 +137,51 @@ denylist = []
 [tools.bash]
 permission = "ask"
 allowlist = [
+    "/mnt/vast/datasets_raw/val_eur/karl_ml4_sft/data_hunter_output/*",
+    "/mnt/vast/home/vincent.pfister/.vibe/*",
+    "basename",
+    "cat",
+    "comm",
+    "cut",
+    "date",
+    "diff",
+    "dirname",
+    "du",
     "echo",
+    "file",
     "find",
+    "fmt",
+    "fold",
     "git diff",
     "git log",
     "git status",
-    "tree",
-    "whoami",
-    "cat",
-    "file",
+    "grep",
     "head",
+    "join",
+    "less",
     "ls",
+    "md5sum",
+    "more",
+    "nl",
+    "od",
+    "paste",
     "pwd",
+    "readlink",
+    "sha1sum",
+    "sha256sum",
+    "shasum",
+    "sort",
     "stat",
+    "sum",
+    "tac",
     "tail",
+    "tr",
+    "tree",
     "uname",
+    "uniq",
     "wc",
     "which",
+    "whoami",
 ]
 denylist = [
     "gdb",
@@ -217,20 +249,6 @@ exclude_patterns = [
 ]
 codeignore_file = ".vibeignore"
 
-[tools.read_file]
-permission = "always"
-allowlist = []
-denylist = []
-max_read_bytes = 64000
-
-[tools.search_replace]
-permission = "ask"
-allowlist = []
-denylist = []
-max_content_size = 100000
-create_backup = false
-fuzzy_threshold = 0.9
-
 [tools.task]
 permission = "ask"
 allowlist = [
@@ -266,3 +284,15 @@ allowlist = []
 denylist = []
 max_write_bytes = 64000
 create_parent_dirs = true
+
+[tools.read]
+permission = "always"
+allowlist = []
+denylist = []
+max_read_bytes = 64000
+
+[tools.edit]
+permission = "ask"
+allowlist = []
+denylist = []
+fuzzy_threshold = 0.9
