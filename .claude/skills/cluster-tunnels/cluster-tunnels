@@ -147,13 +147,19 @@ _print_host_block() {  # host port user alias
 
 print_config() {
   print -r -- "# ===== add to ~/.ssh/config on $SOURCE_HOST ====="
-  print -r -- "# one-time on $SOURCE_HOST:  mkdir -p ~/.ssh/sockets && chmod 700 ~/.ssh/sockets"
+  print -r -- "# one-time setup ON $SOURCE_HOST:"
+  print -r -- "#   1) mkdir -p ~/.ssh/sockets && chmod 700 ~/.ssh/sockets   (for ControlPath)"
+  print -r -- "#   2) log in to $SOURCE_HOST with agent forwarding (ssh -A $SOURCE_HOST) so your"
+  print -r -- "#      forwarded key authenticates onward to the destinations / the Mac"
   for entry in $DESTINATIONS; do
     local parts=(${=entry}); local name=$parts[1] rport=$parts[3]
     _print_host_block "$name" "$rport" "$DEST_USER" "$name-via-tunnel"
   done
   if [[ -n "$EXPOSE_LAPTOP_PORT" ]]; then
     _print_host_block "$MAC_HOST" "$EXPOSE_LAPTOP_PORT" "$MAC_USER" "mac-via-tunnel"
+    print -r -- "    # '$MAC_HOST' is your laptop. One-time setup ON THE MAC:"
+    print -r -- "    #   1) Remote Login = On  (System Settings > General > Sharing)"
+    print -r -- "    #   2) append your Secretive public key to ~/.ssh/authorized_keys"
   fi
 }
 
