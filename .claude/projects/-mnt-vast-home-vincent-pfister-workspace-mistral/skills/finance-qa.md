@@ -103,6 +103,28 @@ IGNORE_DISK_SPACE=1 uv run --frozen python train_online.py sweep \
 - `--override_root_dir <path>` — sets the run directory. Must `mkdir -p` it first (errors if missing).
 - `--override_run_dir True` — **DANGER: wipes entire run dir including checkpoints**. Try `relaunch` first.
 
+### S3 checkpoint consolidation
+
+Checkpoints are automatically consolidated to CoreWeave S3 when the sweep has:
+```yaml
+s3_consolidation: true
+s3_consolidation_backend: coreweave
+```
+The S3 path is stored in `rundir/checkpoints/checkpoint_XXX/consolidated/s3_uri.json`.
+
+**Required env vars** (pass via `--env_vars`):
+- `COREWEAVE_ENDPOINT` — `http://cwlota.com` on RNO (uses LOTA read cache), `https://cwobject.com` on other clusters
+- `COREWEAVE_ACCESS_KEY`, `COREWEAVE_SECRET_KEY` — personal CW S3 credentials (request from #science-ops, stored in `~/.cwkeys`)
+
+**Manual upload** of existing checkpoints:
+```bash
+python -m tools.copy_consolidated_checkpoint_to_s3 <checkpoint_path> --backend coreweave --delete-local
+```
+
+**Freeing disk space**: once checkpoints are on S3 and evals are done, delete local `.safetensors` files. vLLM can stream from S3 via LOTA cache for future evals.
+
+**Archival** (Backblaze, 20PB): for long-term storage of valuable checkpoints/datasets. Tooling TBD (announced 2026-07-01, #science-ops by Sherif Waly).
+
 ### Sweep file requirements
 
 Runner section must be named **`orchestral_rl_runner`** (not `orchestral_runner`):
