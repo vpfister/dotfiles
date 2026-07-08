@@ -83,3 +83,4 @@ fi
 
 # --- Shell completions (guarded) ---
 command -v uv &>/dev/null && eval "$(uv generate-shell-completion zsh)" || true
+alias visdiff="/Applications/VisualDiffer.app/Contents/Helpers/visdiff"
