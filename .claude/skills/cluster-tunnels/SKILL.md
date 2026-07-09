@@ -84,7 +84,7 @@ scp ./file mac:~/Downloads/     # copy to the laptop
 
 **Two one-time prerequisites on the Mac** (cannot be done from the cluster):
 
-1. **Enable Remote Login AND allow your user** (two separate things): System Settings -> General -> Sharing -> **Remote Login = On** (macOS has no sshd by default), then open the ⓘ and set **Allow access for** to *All users* or add your account. Turning the service on is not enough — if your user isn't allowed, sshd reads `authorized_keys` (so the key is accepted) but then **closes the session**, showing `Connection closed` right after Touch ID (looks like a key/auth bug, but isn't).
+1. **Enable Remote Login AND allow your user** (two separate things): System Settings -> General -> Sharing -> **Remote Login = On** (macOS has no sshd by default), then open the ⓘ and set **Allow access for** to *All users* (prefer this over adding your account: the list gets reset to a default that can exclude you whenever Remote Login toggles off/on — which happens around sleep). Turning the service on is not enough — if your user isn't allowed, sshd reads `authorized_keys` (so the key is accepted) but then **closes the session**, showing `Connection closed` right after Touch ID (looks like a key/auth bug, but isn't). Security is still enforced by key auth.
 2. **Authorize the forwarded key:** the source authenticates using the agent-forwarded Secure-Enclave key, so that key's *public* half must be in the Mac's `~/.ssh/authorized_keys`:
    ```
    ssh-add -L >> ~/.ssh/authorized_keys        # on the laptop (keep only your Secretive line)
@@ -98,9 +98,9 @@ scp ./file mac:~/Downloads/     # copy to the laptop
 - **The `-L` target is `localhost:22` resolved on the destination side** — never the destination's laptop-config alias (it won't resolve remotely → every forwarded connection dies with `kex_exchange_identification: Connection closed`).
 - **Forwards live on the ssh ControlMaster and outlive the client process** that requested them. To change one, use `ssh -O cancel`/`ssh -O forward` — do **not** `kill` the process (the forward stays). `cluster-tunnels down` then `up` resets cleanly.
 - **Editing the script (zsh):** brace forward-spec variables — `${lport}` not `$lport` — or zsh interprets `:l` as a history modifier and mangles the spec (`2200:localhost` → `2200ocalhost`, "Bad local forwarding specification").
-- **macOS Remote Login is two settings:** enabling the service does not imply access — your user must also be in *Allow access for* (Sharing -> Remote Login -> ⓘ), or sshd accepts the key then drops the session (`Connection closed` right after Touch ID).
+- **macOS Remote Login is two settings:** enabling the service does not imply access — your user must also be in *Allow access for* (Sharing -> Remote Login -> ⓘ), or sshd accepts the key then drops the session (`Connection closed` right after Touch ID). Set it to **All users**; adding a specific user is fragile because the list resets when Remote Login toggles off/on (e.g. around sleep).
 - **Restricted ports:** clusters may reject some listen ports even above 1024; bump the port if a forward is refused (`remote port forwarding failed for listen port N`).
-- **Laptop sleep drops everything** — re-run `cluster-tunnels up`. For auto-reconnect across sleeps, swap `ssh -f -N` for `autossh` in the script.
+- **Laptop sleep drops everything** — the reverse connection dies (re-run `cluster-tunnels up`, or use `autossh`), and on the Mac side sleep makes sshd unreachable and can reset the Remote Login access list. For an always-reachable `mac`, keep the laptop awake on AC: `sudo pmset -c sleep 0 womp 1` (add `disablesleep 1` for lid-closed, AC + airflow only).
 
 ## Touch ID / Secure-Enclave keys
 
