@@ -10,9 +10,11 @@
 #
 # Usage:
 #   cluster-tunnels [up|down|status|config]
-#     up      open all tunnels (default), then print the source-side ssh config
-#     down    close all tunnels opened by this script
-#     status  show whether each tunnel is alive
+#     up      open all tunnels (default), print the source-side ssh config, and
+#             (on macOS, if MANAGE_MAC_SSHD) enable Remote Login + ensure your
+#             account is in the SSH access group (self-heals the macOS reset)
+#     down    close all tunnels; (on macOS, if MANAGE_MAC_SSHD) disable Remote Login
+#     status  show tunnel state, and (on macOS) whether the Mac's sshd is serving
 #     config  just print the source-side ~/.ssh/config block
 #
 set -euo pipefail
@@ -37,13 +39,20 @@ DESTINATIONS=(
 # Expose the laptop's OWN sshd back to the source, so the source can
 # `ssh $MAC_HOST` into the laptop. This is just the reverse leg pointed at
 # laptop:22 instead of at a destination.
-#   Requires on the Mac: Remote Login enabled (System Settings > General >
-#   Sharing > Remote Login), and the forwarded key's public key present in
-#   ~/.ssh/authorized_keys (so the agent-forwarded key authenticates back).
 # Leave EXPOSE_LAPTOP_PORT empty ("") to disable.
 EXPOSE_LAPTOP_PORT="12224"     # port on SOURCE_HOST that maps back to laptop:22
 MAC_HOST="mac"                 # ssh alias created on the source
-MAC_USER="vincent.pfister"     # your username on the Mac
+MAC_USER="vincent.pfister"     # your username on the Mac (must match `whoami`, case-sensitive)
+
+# When EXPOSE_LAPTOP_PORT is set AND we're running on macOS (laptop == the Mac),
+# also manage the Mac's own Remote Login (sshd) as part of up/down/status:
+#   up     -> enable Remote Login + ensure $MAC_USER is in the com.apple.access_ssh
+#             group (this self-heals the macOS access-list that resets on toggle/sleep)
+#   down   -> disable Remote Login
+#   status -> report whether sshd serves on :22 and whether access is granted
+# Needs sudo; `systemsetup -setremotelogin` also needs your TERMINAL to have Full
+# Disk Access. Set to "" to leave the Mac's sshd completely untouched.
+MANAGE_MAC_SSHD="yes"
 
 # Dedicated control sockets for this script (kept separate from your
 # interactive masters so they can be managed independently).
@@ -76,7 +85,55 @@ _stop()  {  # tag host
   rm -f "$(_sock "$1")"
 }
 
+# ---- macOS Remote Login (the "mac" host's sshd) management ----
+_is_macos()      { [[ "$(uname)" == "Darwin" ]]; }
+_manage_mac()    { _is_macos && [[ -n "$EXPOSE_LAPTOP_PORT" && -n "$MANAGE_MAC_SSHD" ]]; }
+_mac_sshd_live() { bash -c 'exec 3<>/dev/tcp/127.0.0.1/22' 2>/dev/null; }  # sudo-free
+_mac_access_ok() { dseditgroup -o checkmember -m "$MAC_USER" com.apple.access_ssh >/dev/null 2>&1; }
+
+_mac_sshd_up() {
+  _manage_mac || return 0
+  # fast path: already serving + allowed -> no sudo needed
+  if _mac_sshd_live && _mac_access_ok; then
+    print -r -- "  mac sshd:  already serving on :22, $MAC_USER allowed"
+    return 0
+  fi
+  print -r -- "  mac sshd:  enabling Remote Login + allowing $MAC_USER (sudo)"
+  sudo systemsetup -f -setremotelogin on >/dev/null 2>&1 \
+    || print -r -- "  ! mac sshd: couldn't enable Remote Login — grant your terminal Full Disk Access, or toggle it in System Settings > Sharing"
+  # ensure the SSH access group (SACL) exists and includes the user; this is the
+  # piece that macOS keeps resetting and that causes 'accept key then close'.
+  sudo dseditgroup -o create com.apple.access_ssh >/dev/null 2>&1 || true
+  sudo dseditgroup -o edit -a "$MAC_USER" -t user com.apple.access_ssh >/dev/null 2>&1 \
+    || print -r -- "  ! mac sshd: couldn't add $MAC_USER to com.apple.access_ssh"
+}
+
+_mac_sshd_down() {
+  _manage_mac || return 0
+  print -r -- "  mac sshd:  disabling Remote Login (sudo)"
+  sudo systemsetup -f -setremotelogin off >/dev/null 2>&1 \
+    || print -r -- "  ! mac sshd: couldn't disable Remote Login (needs Full Disk Access)"
+}
+
+_mac_sshd_status() {
+  _is_macos || return 0
+  [[ -n "$EXPOSE_LAPTOP_PORT" ]] || return 0
+  if _mac_sshd_live; then
+    print -r -- "  UP    mac sshd (:22 serving)"
+  else
+    print -r -- "  DOWN  mac sshd (:22 not serving — Remote Login off?)"
+  fi
+  if _mac_access_ok; then
+    print -r -- "  OK    mac access: $MAC_USER in com.apple.access_ssh"
+  else
+    print -r -- "  WARN  mac access: $MAC_USER not in com.apple.access_ssh (All-users mode or excluded)"
+  fi
+}
+
 up() {
+  # 0) (macOS) make sure the laptop's own sshd is reachable as "mac"
+  _mac_sshd_up
+
   # 1) local forwards: laptop -> each destination
   for entry in $DESTINATIONS; do
     local parts=(${=entry}); local name=$parts[1] lport=$parts[2]
@@ -114,6 +171,8 @@ down() {
   for entry in $DESTINATIONS; do
     local parts=(${=entry}); _stop "L-$parts[1]" "$parts[1]"
   done
+  # (macOS) also stop the laptop's Remote Login
+  _mac_sshd_down
 }
 
 status() {
@@ -130,6 +189,8 @@ status() {
       print -r -- "  DOWN  L-$name"
     fi
   done
+  # (macOS) report the mac host's own sshd + access state
+  _mac_sshd_status
 }
 
 _print_host_block() {  # host port user alias
@@ -157,9 +218,9 @@ print_config() {
   done
   if [[ -n "$EXPOSE_LAPTOP_PORT" ]]; then
     _print_host_block "$MAC_HOST" "$EXPOSE_LAPTOP_PORT" "$MAC_USER" "mac-via-tunnel"
-    print -r -- "    # '$MAC_HOST' is your laptop. One-time setup ON THE MAC:"
-    print -r -- "    #   1) Remote Login = On  (System Settings > General > Sharing)"
-    print -r -- "    #   2) append your Secretive public key to ~/.ssh/authorized_keys"
+    print -r -- "    # '$MAC_HOST' is your laptop. On the Mac: this script's 'up' enables Remote"
+    print -r -- "    #   Login + adds $MAC_USER to com.apple.access_ssh; you still need your key in"
+    print -r -- "    #   ~/.ssh/authorized_keys (append 'ssh-add -L' on the laptop)."
   fi
 }
 
