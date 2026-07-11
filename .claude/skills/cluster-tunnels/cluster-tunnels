@@ -93,26 +93,40 @@ _mac_access_ok() { dseditgroup -o checkmember -m "$MAC_USER" com.apple.access_ss
 
 _mac_sshd_up() {
   _manage_mac || return 0
-  # fast path: already serving + allowed -> no sudo needed
+  # nothing to do if sshd is already serving and access resolves
   if _mac_sshd_live && _mac_access_ok; then
     print -r -- "  mac sshd:  already serving on :22, $MAC_USER allowed"
     return 0
   fi
-  print -r -- "  mac sshd:  enabling Remote Login + allowing $MAC_USER (sudo)"
-  sudo systemsetup -f -setremotelogin on >/dev/null 2>&1 \
-    || print -r -- "  ! mac sshd: couldn't enable Remote Login — grant your terminal Full Disk Access, or toggle it in System Settings > Sharing"
-  # ensure the SSH access group (SACL) exists and includes the user; this is the
-  # piece that macOS keeps resetting and that causes 'accept key then close'.
-  sudo dseditgroup -o create com.apple.access_ssh >/dev/null 2>&1 || true
-  sudo dseditgroup -o edit -a "$MAC_USER" -t user com.apple.access_ssh >/dev/null 2>&1 \
-    || print -r -- "  ! mac sshd: couldn't add $MAC_USER to com.apple.access_ssh"
+  # We need sudo. Authenticate VISIBLY first — otherwise the suppressed sudo
+  # calls below hide the password prompt and the script just looks hung. Note:
+  # sudo Touch ID does NOT work inside tmux without pam_reattach, so this may ask
+  # for your password instead of a fingerprint.
+  print -r -- "  mac sshd:  need sudo to enable Remote Login / SSH access..."
+  if ! sudo -v; then
+    print -r -- "  ! sudo not authorized — skipping mac sshd setup (run 'sudo -v' first; for Touch ID in tmux install pam_reattach)"
+    return 0
+  fi
+  _mac_sshd_live || sudo systemsetup -f -setremotelogin on >/dev/null 2>&1 \
+    || print -r -- "  ! couldn't enable Remote Login — grant your TERMINAL Full Disk Access, or toggle it in System Settings > Sharing"
+  # best-effort: keep your account in the SSH access group (may be a no-op if you
+  # decoupled sshd from the SACL via /etc/pam.d/sshd).
+  if ! _mac_access_ok; then
+    sudo dseditgroup -o create com.apple.access_ssh >/dev/null 2>&1 || true
+    sudo dseditgroup -o edit -a "$MAC_USER" -t user com.apple.access_ssh >/dev/null 2>&1 || true
+    sudo dsmemberutil flushcache >/dev/null 2>&1 || true
+  fi
 }
 
 _mac_sshd_down() {
   _manage_mac || return 0
-  print -r -- "  mac sshd:  disabling Remote Login (sudo)"
+  print -r -- "  mac sshd:  need sudo to disable Remote Login..."
+  if ! sudo -v; then
+    print -r -- "  ! sudo not authorized — leaving Remote Login as-is (run 'sudo -v' first)"
+    return 0
+  fi
   sudo systemsetup -f -setremotelogin off >/dev/null 2>&1 \
-    || print -r -- "  ! mac sshd: couldn't disable Remote Login (needs Full Disk Access)"
+    || print -r -- "  ! couldn't disable Remote Login (needs Full Disk Access)"
 }
 
 _mac_sshd_status() {
