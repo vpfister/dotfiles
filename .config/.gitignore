@@ -1,0 +1,3 @@
+# Per-machine tmux host styling: must never be committed.
+# Copy host-style.example.sh -> host-style.sh and edit locally.
+host-style.sh
