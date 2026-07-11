@@ -70,6 +70,13 @@ if command -v yazi &>/dev/null; then
   }
 fi
 
+# kubectl (guarded; compinit already ran above)
+if command -v kubectl &>/dev/null; then
+  source <(kubectl completion zsh)
+  alias k=kubectl
+  compdef k=kubectl   # give the `k` alias kubectl's completion
+fi
+
 # --- Terminal fixes ---
 # Ghostty terminfo fallback
 if [ "$TERM" = "xterm-ghostty" ] && ! infocmp xterm-ghostty &>/dev/null; then
