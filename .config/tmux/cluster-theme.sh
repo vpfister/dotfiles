@@ -35,18 +35,18 @@ tint=$(blend "$accent" 18)   # status-bar background (dark, smooth)
 mid=$(blend "$accent" 40)    # inactive pane borders (subdued)
 
 # ---- icon glyph (nerd font) -------------------------------------------------
-# Built from codepoints via printf: literal private-use glyphs get stripped by
-# some editors, but the escape sequences are plain ASCII in this file and the
-# real bytes are produced at runtime.
+# Glyphs are emitted as raw UTF-8 byte escapes (\xHH) via printf: this keeps the
+# file pure ASCII (literal PUA glyphs get stripped by some editors) AND works on
+# macOS /bin/bash 3.2, whose printf does NOT support \u/\U (bash 4.2+ only).
 case "$icon" in
-  mac|apple)       glyph=$(printf '\uf179')     ;;  # nf-fa-apple
-  linux)           glyph=$(printf '\uf17c')     ;;  # nf-fa-linux
-  kubernetes|k8s)  glyph=$(printf '\U000f14fe') ;;  # nf-md-kubernetes
-  server)          glyph=$(printf '\uf473')     ;;  # nf-oct-server
-  cloud)           glyph=$(printf '\uf0c2')     ;;  # nf-fa-cloud
-  gpu)             glyph=$(printf '\U000f08ae') ;;  # nf-md-expansion_card
-  chip)            glyph=$(printf '\U000f061a') ;;  # nf-md-chip
-  microchip)       glyph=$(printf '\uf2db')     ;;  # nf-fa-microchip
+  mac|apple)       glyph=$(printf '\xef\x85\xb9')     ;;  # nf-fa-apple
+  linux)           glyph=$(printf '\xef\x85\xbc')     ;;  # nf-fa-linux
+  kubernetes|k8s)  glyph=$(printf '\xf3\xb1\x93\xbe') ;;  # nf-md-kubernetes
+  server)          glyph=$(printf '\xef\x91\xb3')     ;;  # nf-oct-server
+  cloud)           glyph=$(printf '\xef\x83\x82')     ;;  # nf-fa-cloud
+  gpu)             glyph=$(printf '\xf3\xb0\xa2\xae') ;;  # nf-md-expansion_card
+  chip)            glyph=$(printf '\xf3\xb0\x98\x9a') ;;  # nf-md-chip
+  microchip)       glyph=$(printf '\xef\x8b\x9b')     ;;  # nf-fa-microchip
   "")              glyph=""                      ;;
   *)               glyph=$icon                   ;;  # raw glyph passthrough
 esac
@@ -57,8 +57,8 @@ tmux set -g @cluster_name   "$label"
 tmux set -g @cluster_accent "$accent"
 
 # Rounded pill caps for status-left (also built at runtime, same reason).
-tmux set -g @cluster_lcap "$(printf '\ue0b6')"   # left half-circle
-tmux set -g @cluster_rcap "$(printf '\ue0b4')"   # right half-circle
+tmux set -g @cluster_lcap "$(printf '\xee\x82\xb6')"   # left half-circle
+tmux set -g @cluster_rcap "$(printf '\xee\x82\xb4')"   # right half-circle
 
 # styles do not format-expand, so set them directly here
 tmux set -g status-style              "bg=$tint"
