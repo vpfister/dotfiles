@@ -9,7 +9,9 @@
 #           hostname if unset.
 #   accent  hex color for the pill + active pane border. The status-bar
 #           background tint and inactive borders are derived from it.
-#   icon    optional: mac | linux | kubernetes | server  (or paste a raw glyph)
+#   icon    optional: mac | linux | kubernetes | server | cloud | gpu | chip |
+#           microchip  (or paste a raw glyph). No CoreWeave glyph exists in Nerd
+#           Fonts; 'cloud' or 'gpu' (a graphics/expansion card) fit rno best.
 #   border  optional: override the active-pane-border color (defaults to accent)
 #
 # Colors below are catppuccin mocha accents. Hostname signature for each cluster
@@ -28,7 +30,9 @@
 # name="ice";     accent="#89dceb"; icon="linux"   # sky (icy)
 
 # --- rno --- slurm-login-* (.rno-login, or bare slurm-login-...)
-# name="rno";     accent="#89b4fa"; icon="linux"   # blue
+name="rno"
+accent="#89b4fa"
+icon="cloud" # blue (CoreWeave; 'gpu' also fits)
 
 # --- sko --- slurm-sko-login-*
 # name="sko";     accent="#f9e2af"; icon="linux"   # yellow

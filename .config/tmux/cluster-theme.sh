@@ -43,6 +43,10 @@ case "$icon" in
   linux)           glyph=$(printf '\uf17c')     ;;  # nf-fa-linux
   kubernetes|k8s)  glyph=$(printf '\U000f14fe') ;;  # nf-md-kubernetes
   server)          glyph=$(printf '\uf473')     ;;  # nf-oct-server
+  cloud)           glyph=$(printf '\uf0c2')     ;;  # nf-fa-cloud
+  gpu)             glyph=$(printf '\U000f08ae') ;;  # nf-md-expansion_card
+  chip)            glyph=$(printf '\U000f061a') ;;  # nf-md-chip
+  microchip)       glyph=$(printf '\uf2db')     ;;  # nf-fa-microchip
   "")              glyph=""                      ;;
   *)               glyph=$icon                   ;;  # raw glyph passthrough
 esac
