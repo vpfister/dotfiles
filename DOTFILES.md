@@ -174,6 +174,46 @@ The dotfiles already source `~/.cargo/env` in `.bashrc`, `.profile`, and `.zshrc
 
 ---
 
+## Touch ID for sudo (macOS, incl. inside tmux)
+
+Make `sudo` accept Touch ID — and crucially make it work **inside tmux**, where it
+otherwise silently falls back to the password prompt (tmux runs outside the GUI/Aqua
+session, so the Touch ID dialog can't be shown without a reattach shim).
+
+Per machine (not tracked — `/etc/pam.d/` is a system path):
+
+```bash
+brew install pam-reattach
+# pam_reattach MUST come before pam_tid; the brew "opt" path survives version upgrades
+sudo tee /etc/pam.d/sudo_local >/dev/null <<EOF
+auth       optional       $(brew --prefix pam-reattach)/lib/pam/pam_reattach.so
+auth       sufficient     pam_tid.so
+EOF
+```
+
+Verify and test **inside tmux**:
+
+```bash
+cat /etc/pam.d/sudo_local          # pam_reattach line first, then pam_tid
+sudo -k && sudo ls                 # should prompt Touch ID, not a password
+```
+
+Notes / gotchas:
+
+- `/etc/pam.d/sudo` already `include`s `sudo_local` on macOS 13+, and `sudo_local`
+  survives OS updates (unlike editing `/etc/pam.d/sudo` directly).
+- Only `pam_tid.so` (no `pam_reattach`) → Touch ID works in a **plain terminal but not
+  in tmux**. That's the usual symptom.
+- Order matters: `pam_reattach` must be the **first** `auth` line so it reattaches to
+  the Aqua session before `pam_tid` tries to show the fingerprint dialog.
+- **Clamshell / lid closed:** the Touch ID sensor is unavailable, so sudo falls back to
+  the password regardless of config.
+- A stale tmux **server** that predates this setup won't pick it up — `tmux kill-server`
+  and reopen tmux from a GUI terminal (PAM itself is re-read per `sudo` call, so no
+  restart is needed once the server is GUI-born).
+
+---
+
 ## What is NOT tracked
 
 The following are intentionally excluded and must be managed per machine:
