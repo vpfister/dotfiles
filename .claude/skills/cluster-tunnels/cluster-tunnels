@@ -102,8 +102,9 @@ _mac_sshd_up() {
   # calls below hide the password prompt and the script just looks hung. Note:
   # sudo Touch ID does NOT work inside tmux without pam_reattach, so this may ask
   # for your password instead of a fingerprint.
-  print -r -- "  mac sshd:  need sudo to enable Remote Login / SSH access..."
-  if ! sudo -v; then
+  print -r -- "  mac sshd:  sudo needed to enable Remote Login / SSH access"
+  print -r -- "             (Touch ID if pam_reattach is set up, else type your Mac password + Enter)"
+  if ! sudo -v -p '  [sudo] Mac password for %u (type it, then press Enter): '; then
     print -r -- "  ! sudo not authorized — skipping mac sshd setup (run 'sudo -v' first; for Touch ID in tmux install pam_reattach)"
     return 0
   fi
@@ -120,8 +121,9 @@ _mac_sshd_up() {
 
 _mac_sshd_down() {
   _manage_mac || return 0
-  print -r -- "  mac sshd:  need sudo to disable Remote Login..."
-  if ! sudo -v; then
+  print -r -- "  mac sshd:  sudo needed to disable Remote Login"
+  print -r -- "             (Touch ID if pam_reattach is set up, else type your Mac password + Enter)"
+  if ! sudo -v -p '  [sudo] Mac password for %u (type it, then press Enter): '; then
     print -r -- "  ! sudo not authorized — leaving Remote Login as-is (run 'sudo -v' first)"
     return 0
   fi
