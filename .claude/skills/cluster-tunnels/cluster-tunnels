@@ -33,7 +33,7 @@ DEST_USER="vincent.pfister"
 #   source_remote_port : port on SOURCE_HOST that maps back to <ssh-host>
 DESTINATIONS=(
   "ala0  2200  12222"
-  "bar0  2201  12223"
+  "bar   2201  12223"
 )
 
 # Expose the laptop's OWN sshd back to the source, so the source can
