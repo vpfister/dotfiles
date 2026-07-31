@@ -2,7 +2,9 @@
   "enabledPlugins": {
     "lua-lsp@claude-plugins-official": true,
     "slack@claude-plugins-official": true,
-    "superpowers@claude-plugins-official": true
+    "superpowers@claude-plugins-official": true,
+    "pyright-lsp@claude-plugins-official": true,
+    "discord@claude-plugins-official": true
   },
   "skipWorkflowUsageWarning": true,
   "worktree": {
