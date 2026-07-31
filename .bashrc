@@ -88,8 +88,8 @@ if [[ -f /mnt/vast/shared/config/.bashrc ]]; then
   export CLAUDE_CODE_USE_FOUNDRY=1
   export ANTHROPIC_FOUNDRY_API_KEY='dont-worry-this-key-will-be-auto-injected'
   export ANTHROPIC_FOUNDRY_BASE_URL=http://codex-foundry-proxy.tenant-slurm/anthropic
-  #export ANTHROPIC_MODEL='claude-opus-4-7[1m]'
-  export ANTHROPIC_MODEL='claude-opus-4-8'
+  #export ANTHROPIC_MODEL='claude-opus-4-8'
+  export ANTHROPIC_MODEL='claude-opus-5[1m]'
   export ANTHROPIC_SMALL_FAST_MODEL='claude-haiku-4-5@20251001'
 
   # codex
