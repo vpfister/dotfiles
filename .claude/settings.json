@@ -168,6 +168,14 @@
     "defaultMode": "auto"
   },
   "model": "claude-opus-5[1m]",
+  "autoMode": {
+    "allow": [
+      "$defaults",
+      "Read-only filesystem inspection is allowed anywhere on the filesystem, including outside the working directory. This covers ls, tree, find, cat, head, tail, nl, wc, sort, uniq, cut, stat, file, du, df, rg, grep, jq, sed -n, and read-only git subcommands (status, log, diff, show, blame, ls-files, rev-parse, branch --list, ...).",
+      "Compound read-only pipelines are allowed even when they assign a literal path to a shell variable first, and even when that path uses ~ or $HOME expansion. Example: K=~/workspace/proj/src; ls $K/*.py; grep -ln 'foo' $K/*.py. A tilde or variable in an assignment is not by itself a reason to prompt when every command in the pipeline is read-only.",
+      "This does not extend to a variable whose value comes from command substitution that fetches over the network or mutates state (e.g. K=$(curl ...)), nor to any pipeline segment that writes, deletes, or redirects output to a file."
+    ]
+  },
   "worktree": {
     "bgIsolation": "none"
   },
