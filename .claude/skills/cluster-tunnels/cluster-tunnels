@@ -32,7 +32,7 @@ DEST_USER="vincent.pfister"
 #   laptop_local_port  : port on the laptop for the -L forward to <ssh-host>:22
 #   source_remote_port : port on SOURCE_HOST that maps back to <ssh-host>
 DESTINATIONS=(
-  "ala0  2200  12222"
+  # "ala0  2200  12222"   # ALA decommissioned — uncomment to re-enable
   "bar   2201  12223"
 )
 
@@ -60,6 +60,7 @@ SOCKET_DIR="$HOME/.ssh/sockets/tunnels"
 
 # Options shared by every tunnel master connection.
 SSH_COMMON=(
+  -o ConnectTimeout=10             # fail fast on an unreachable/unknown host
   -o ExitOnForwardFailure=yes      # fail loudly if a forward can't bind
   -o ServerAliveInterval=30
   -o ServerAliveCountMax=3
@@ -150,35 +151,48 @@ up() {
   # 0) (macOS) make sure the laptop's own sshd is reachable as "mac"
   _mac_sshd_up
 
-  # 1) local forwards: laptop -> each destination
+  # 1) local forwards: laptop -> each destination. A host that can't be opened
+  #    (unknown / renamed / unreachable) is skipped with a warning instead of
+  #    crashing the whole run; remember which came up so only those get a
+  #    matching reverse forward below.
+  local live=()   # entries "lport rport" for destinations whose -L is up
   for entry in $DESTINATIONS; do
-    local parts=(${=entry}); local name=$parts[1] lport=$parts[2]
+    local parts=(${=entry}); local name=$parts[1] lport=$parts[2] rport=$parts[3]
     local tag="L-$name"
     if _is_up "$tag" "$name"; then
       print -r -- "  already up: $tag"
+      live+=("$lport $rport")
     else
       print -r -- "  opening:   laptop:$lport -> $name:22   (Touch ID may prompt)"
-      ssh -f -N $SSH_COMMON -o ControlPath="$(_sock "$tag")" \
-        -L "127.0.0.1:${lport}:localhost:22" "$name"
+      if ssh -f -N $SSH_COMMON -o ControlPath="$(_sock "$tag")" \
+           -L "127.0.0.1:${lport}:localhost:22" "$name"; then
+        live+=("$lport $rport")
+      else
+        print -r -- "  ! skipped $name — couldn't open its -L forward (unknown/renamed/unreachable?); continuing"
+      fi
     fi
   done
 
-  # 2) one reverse connection to SOURCE carrying every -R forward
+  # 2) one reverse connection to SOURCE carrying a -R for each LIVE destination
   local rflags=()
-  for entry in $DESTINATIONS; do
-    local parts=(${=entry}); local lport=$parts[2] rport=$parts[3]
-    rflags+=(-R "127.0.0.1:${rport}:127.0.0.1:${lport}")
+  for d in $live; do
+    local dp=(${=d}); rflags+=(-R "127.0.0.1:${dp[2]}:127.0.0.1:${dp[1]}")
   done
   # optional: expose the laptop's own sshd back to the source as host "mac"
   if [[ -n "$EXPOSE_LAPTOP_PORT" ]]; then
     rflags+=(-R "127.0.0.1:${EXPOSE_LAPTOP_PORT}:127.0.0.1:22")
+  fi
+  if (( ${#rflags} == 0 )); then
+    print -r -- "  (nothing to forward to $SOURCE_HOST — no live destinations)"
+    return 0
   fi
   local tag="R-$SOURCE_HOST"
   if _is_up "$tag" "$SOURCE_HOST"; then
     print -r -- "  already up: $tag"
   else
     print -r -- "  opening:   $SOURCE_HOST reverse forwards   (Touch ID may prompt)"
-    ssh -f -N $SSH_COMMON -o ControlPath="$(_sock "$tag")" $rflags "$SOURCE_HOST"
+    ssh -f -N $SSH_COMMON -o ControlPath="$(_sock "$tag")" $rflags "$SOURCE_HOST" \
+      || print -r -- "  ! couldn't open reverse connection to $SOURCE_HOST"
   fi
 }
 
