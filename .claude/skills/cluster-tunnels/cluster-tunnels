@@ -11,8 +11,7 @@
 # Usage:
 #   cluster-tunnels [up|down|status|config]
 #     up      open all tunnels (default), print the source-side ssh config, and
-#             (on macOS, if MANAGE_MAC_SSHD) enable Remote Login + ensure your
-#             account is in the SSH access group (self-heals the macOS reset)
+#             (on macOS, if MANAGE_MAC_SSHD) enable Remote Login
 #     down    close all tunnels; (on macOS, if MANAGE_MAC_SSHD) disable Remote Login
 #     status  show tunnel state, and (on macOS) whether the Mac's sshd is serving
 #     config  just print the source-side ~/.ssh/config block
@@ -46,18 +45,22 @@ MAC_USER="vincent.pfister"     # your username on the Mac (must match `whoami`, 
 
 # When EXPOSE_LAPTOP_PORT is set AND we're running on macOS (laptop == the Mac),
 # also manage the Mac's own Remote Login (sshd) as part of up/down/status:
-#   up     -> enable Remote Login + ensure $MAC_USER is in the com.apple.access_ssh
-#             group (this self-heals the macOS access-list that resets on toggle/sleep)
+#   up     -> enable Remote Login
 #   down   -> disable Remote Login
-#   status -> report whether sshd serves on :22 and whether access is granted
+#   status -> report whether sshd serves on :22
+# The per-user SSH access list (com.apple.access_ssh SACL) is intentionally NOT
+# managed here — decouple sshd from it once via `pam_sacl -> optional` in
+# /etc/pam.d/sshd (see SKILL.md). That removes the moving part that used to drop
+# the connection right after Touch ID.
 # Needs sudo; `systemsetup -setremotelogin` also needs your TERMINAL to have Full
 # Disk Access. Set to "" to leave the Mac's sshd completely untouched.
 MANAGE_MAC_SSHD="yes"
 
-# Keep the Mac's SSH access healthy *between* `up` runs: install a root
-# LaunchDaemon that re-enables Remote Login and re-adds you to com.apple.access_ssh
-# every MAINTAIN_INTERVAL seconds (some setups drop these on sleep / policy sync).
-# `up` installs+loads it; `down` removes it. Needs sudo once (to install). "" to disable.
+# Keep the Mac's sshd loaded *between* `up` runs: install a root LaunchDaemon that
+# re-bootstraps com.openssh.sshd every MAINTAIN_INTERVAL seconds (in case sleep /
+# policy sync unloads it). With pam_sacl -> optional in place this is only sshd
+# insurance — no access-group churn. `up` installs+loads it; `down` removes it.
+# Needs sudo once (to install). "" to disable.
 MAINTAIN_MAC_ACCESS="yes"
 MAINTAIN_INTERVAL=60
 MAINTAIN_LABEL="com.vpfister.macssh-maintain"
@@ -100,34 +103,27 @@ _stop()  {  # tag host
 _is_macos()      { [[ "$(uname)" == "Darwin" ]]; }
 _manage_mac()    { _is_macos && [[ -n "$EXPOSE_LAPTOP_PORT" && -n "$MANAGE_MAC_SSHD" ]]; }
 _mac_sshd_live() { bash -c 'exec 3<>/dev/tcp/127.0.0.1/22' 2>/dev/null; }  # sudo-free
-_mac_access_ok() { dseditgroup -o checkmember -m "$MAC_USER" com.apple.access_ssh >/dev/null 2>&1; }
 
 _mac_sshd_up() {
   _manage_mac || return 0
-  # nothing to do if sshd is already serving and access resolves
-  if _mac_sshd_live && _mac_access_ok; then
-    print -r -- "  mac sshd:  already serving on :22, $MAC_USER allowed"
+  # nothing to do if sshd is already serving (access is decoupled from the SACL
+  # via pam_sacl -> optional in /etc/pam.d/sshd, so serving == reachable)
+  if _mac_sshd_live; then
+    print -r -- "  mac sshd:  already serving on :22"
     return 0
   fi
   # We need sudo. Authenticate VISIBLY first — otherwise the suppressed sudo
   # calls below hide the password prompt and the script just looks hung. Note:
   # sudo Touch ID does NOT work inside tmux without pam_reattach, so this may ask
   # for your password instead of a fingerprint.
-  print -r -- "  mac sshd:  sudo needed to enable Remote Login / SSH access"
+  print -r -- "  mac sshd:  sudo needed to enable Remote Login"
   print -r -- "             (Touch ID if pam_reattach is set up, else type your Mac password + Enter)"
   if ! sudo -v -p '  [sudo] Mac password for %u (type it, then press Enter): '; then
     print -r -- "  ! sudo not authorized — skipping mac sshd setup (run 'sudo -v' first; for Touch ID in tmux install pam_reattach)"
     return 0
   fi
-  _mac_sshd_live || sudo systemsetup -f -setremotelogin on >/dev/null 2>&1 \
+  sudo systemsetup -f -setremotelogin on >/dev/null 2>&1 \
     || print -r -- "  ! couldn't enable Remote Login — grant your TERMINAL Full Disk Access, or toggle it in System Settings > Sharing"
-  # best-effort: keep your account in the SSH access group (may be a no-op if you
-  # decoupled sshd from the SACL via /etc/pam.d/sshd).
-  if ! _mac_access_ok; then
-    sudo dseditgroup -o create com.apple.access_ssh >/dev/null 2>&1 || true
-    sudo dseditgroup -o edit -a "$MAC_USER" -t user com.apple.access_ssh >/dev/null 2>&1 || true
-    sudo dsmemberutil flushcache >/dev/null 2>&1 || true
-  fi
 }
 
 _mac_sshd_down() {
@@ -150,11 +146,6 @@ _mac_sshd_status() {
   else
     print -r -- "  DOWN  mac sshd (:22 not serving — Remote Login off?)"
   fi
-  if _mac_access_ok; then
-    print -r -- "  OK    mac access: $MAC_USER in com.apple.access_ssh"
-  else
-    print -r -- "  WARN  mac access: $MAC_USER not in com.apple.access_ssh (All-users mode or excluded)"
-  fi
   if [[ -f "$MAINTAIN_PLIST" ]]; then
     print -r -- "  OK    mac maintainer installed ($MAINTAIN_LABEL, every ${MAINTAIN_INTERVAL}s)"
   else
@@ -168,17 +159,13 @@ _mac_maintain_install() {
   print -r -- "  mac access: installing per-minute maintainer ($MAINTAIN_LABEL, root LaunchDaemon)"
   sudo -v -p '  [sudo] Mac password for %u (type it, then press Enter): ' || { print -r -- "  ! sudo not authorized; skipping maintainer install"; return 0; }
   sudo mkdir -p "${MAINTAIN_SCRIPT:h}"
-  sudo tee "$MAINTAIN_SCRIPT" >/dev/null <<EOF
+  sudo tee "$MAINTAIN_SCRIPT" >/dev/null <<'EOF'
 #!/bin/sh
-# Managed by cluster-tunnels — keeps SSH access to this Mac healthy (runs as root).
+# Managed by cluster-tunnels — keeps this Mac's sshd loaded (runs as root).
+# SSH access is decoupled from the com.apple.access_ssh SACL via pam_sacl -> optional
+# in /etc/pam.d/sshd, so this only has to keep the sshd LaunchDaemon up.
 /bin/launchctl enable system/com.openssh.sshd 2>/dev/null
 /bin/launchctl bootstrap system /System/Library/LaunchDaemons/ssh.plist 2>/dev/null
-/usr/sbin/systemsetup -f -setremotelogin on 2>/dev/null
-if ! /usr/bin/dseditgroup -o checkmember -m "$MAC_USER" com.apple.access_ssh >/dev/null 2>&1; then
-  /usr/bin/dseditgroup -o create com.apple.access_ssh 2>/dev/null
-  /usr/bin/dseditgroup -o edit -a "$MAC_USER" -t user com.apple.access_ssh 2>/dev/null
-  /usr/sbin/dsmemberutil flushcache 2>/dev/null
-fi
 EOF
   sudo chown root:wheel "$MAINTAIN_SCRIPT"; sudo chmod 755 "$MAINTAIN_SCRIPT"
   sudo tee "$MAINTAIN_PLIST" >/dev/null <<PLIST
@@ -313,8 +300,8 @@ print_config() {
   if [[ -n "$EXPOSE_LAPTOP_PORT" ]]; then
     _print_host_block "$MAC_HOST" "$EXPOSE_LAPTOP_PORT" "$MAC_USER" "mac-via-tunnel"
     print -r -- "    # '$MAC_HOST' is your laptop. On the Mac: this script's 'up' enables Remote"
-    print -r -- "    #   Login + adds $MAC_USER to com.apple.access_ssh; you still need your key in"
-    print -r -- "    #   ~/.ssh/authorized_keys (append 'ssh-add -L' on the laptop)."
+    print -r -- "    #   Login; you still need your key in ~/.ssh/authorized_keys (append"
+    print -r -- "    #   'ssh-add -L' on the laptop) and pam_sacl -> optional in /etc/pam.d/sshd."
   fi
 }
 
