@@ -83,7 +83,7 @@ ssh mac 'open -a Safari'        # drive laptop-only tools
 scp ./file mac:~/Downloads/     # copy to the laptop
 ```
 
-**`cluster-tunnels up` handles the Mac side for you** (when `MANAGE_MAC_SSHD="yes"`): it enables Remote Login and ensures your account is in the `com.apple.access_ssh` group. That group membership is the piece macOS keeps resetting (around sleep / Remote Login toggling), which is what caused the `Connection closed`-right-after-Touch-ID failures — re-asserting it on every `up` **self-heals** it.
+**`cluster-tunnels up` handles the Mac side for you** (when `MANAGE_MAC_SSHD="yes"`): it enables Remote Login and ensures your account is in the `com.apple.access_ssh` group. That group membership is the piece macOS keeps resetting (around sleep / Remote Login toggling), which is what caused the `Connection closed`-right-after-Touch-ID failures — re-asserting it on every `up` **self-heals** it, and a per-minute maintainer (below) keeps it healthy *between* runs too.
 
 **You still need, one time, on the Mac:**
 
@@ -97,6 +97,16 @@ scp ./file mac:~/Downloads/     # copy to the laptop
 `ssh mac` from the source then prompts Touch ID (signing with that key) and lands on the laptop. Requires the source login to have agent forwarding (`ssh -A` / `ForwardAgent yes`), which the existing setup already uses.
 
 > **Why it used to close right after Touch ID:** sshd accepts the key, then the PAM *account* stage (`pam_sacl` checking the `com.apple.access_ssh` group — the GUI "Allow access for" list) denies (`pam_acct_mgmt = 7`). The key is fine; the account is being refused. `up` re-adding you to that group is the fix.
+
+### Keeping it healthy between runs — the per-minute maintainer
+
+Remote Login and the `com.apple.access_ssh` membership can drop *again* after `up` (sleep, policy sync). So `up` also installs a **root LaunchDaemon** (`com.vpfister.macssh-maintain`; toggle `MAINTAIN_MAC_ACCESS="yes"`) that re-runs the enable-Remote-Login + re-add-to-group logic **at load and every `MAINTAIN_INTERVAL` seconds (60)** — as root, so no per-run sudo. It persists across reboots while loaded.
+
+- `down` removes it (bootout + rm), then disables Remote Login; `status` shows whether it's installed.
+- Files (both root-owned): daemon `/Library/LaunchDaemons/com.vpfister.macssh-maintain.plist`, script `/usr/local/sbin/cluster-tunnels-macssh`. Install needs sudo **once** (the visible `sudo -v`); the per-minute cycles need none.
+- The maintainer also does `launchctl enable/bootstrap system/com.openssh.sshd` (Full-Disk-Access-free), so sshd stays up even if `systemsetup` is TCC-blocked as a daemon.
+- Verify: `sudo launchctl print system/com.vpfister.macssh-maintain`. Manual teardown: `sudo launchctl bootout system <plist> && sudo rm <plist> <script>`.
+- **Less hacky alternative:** make the SACL check non-fatal (`pam_sacl` → `optional` in `/etc/pam.d/sshd`, see *Troubleshooting*). Then membership never needs re-adding and the maintainer only has to keep Remote Login on.
 
 ## Managing the Mac's Remote Login by hand (CLI)
 
