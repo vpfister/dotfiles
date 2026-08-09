@@ -6,7 +6,6 @@
       "Grep",
       "WebFetch",
       "WebSearch",
-
       "Bash(git status:*)",
       "Bash(git log:*)",
       "Bash(git diff:*)",
@@ -51,7 +50,6 @@
       "Bash(git worktree list:*)",
       "Bash(git reflog)",
       "Bash(git reflog show:*)",
-
       "Bash(rg:*)",
       "Bash(grep:*)",
       "Bash(fd:*)",
@@ -82,7 +80,6 @@
       "Bash(md5sum:*)",
       "Bash(sha256sum:*)",
       "Bash(column:*)",
-
       "Bash(echo:*)",
       "Bash(pwd)",
       "Bash(whoami)",
@@ -95,13 +92,11 @@
       "Bash(type:*)",
       "Bash(command -v:*)",
       "Bash(ps:*)",
-
       "Bash(squeue:*)",
       "Bash(sacct:*)",
       "Bash(sinfo:*)",
       "Bash(scontrol show:*)",
       "Bash(nvidia-smi:*)",
-
       "Bash(gh pr view:*)",
       "Bash(gh pr list:*)",
       "Bash(gh pr diff:*)",
@@ -112,7 +107,6 @@
       "Bash(gh run view:*)",
       "Bash(gh run list:*)",
       "Bash(gh repo view:*)",
-
       "Bash(pytest:*)",
       "Bash(python -m pytest:*)",
       "Bash(python3 -m pytest:*)",
@@ -125,7 +119,6 @@
       "Bash(*/pytest)",
       "Bash(*/pytest *)",
       "Bash(cd:*)",
-
       "mcp__plugin_slack_slack__slack_read_channel",
       "mcp__plugin_slack_slack__slack_read_thread",
       "mcp__plugin_slack_slack__slack_read_user_profile",
@@ -181,16 +174,57 @@
     "defaultMode": "auto"
   },
   "model": "claude-opus-5[1m]",
-  "autoMode": {
-    "allow": [
-      "$defaults",
-      "Read-only filesystem inspection is allowed anywhere on the filesystem, including outside the working directory. This covers ls, tree, find, cat, head, tail, nl, wc, sort, uniq, cut, stat, file, du, df, rg, grep, jq, sed -n, and read-only git subcommands (status, log, diff, show, blame, ls-files, rev-parse, branch --list, ...).",
-      "Compound read-only pipelines are allowed even when they assign a literal path to a shell variable first, and even when that path uses ~ or $HOME expansion. Example: K=~/workspace/proj/src; ls $K/*.py; grep -ln 'foo' $K/*.py. A tilde or variable in an assignment is not by itself a reason to prompt when every command in the pipeline is read-only.",
-      "This does not extend to a variable whose value comes from command substitution that fetches over the network or mutates state (e.g. K=$(curl ...)), nor to any pipeline segment that writes, deletes, or redirects output to a file."
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/.claude/mode-mirror.sh"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/.claude/mode-mirror.sh"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/.claude/mode-mirror.sh"
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "matcher": "permission_prompt|idle_prompt|elicitation_dialog",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/.claude/notify-needs-input.sh"
+          }
+        ]
+      }
     ]
   },
   "worktree": {
     "bgIsolation": "none"
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "$HOME/.claude/statusline.sh",
+    "hideVimModeIndicator": true
   },
   "enabledPlugins": {
     "lua-lsp@claude-plugins-official": true,
@@ -200,5 +234,14 @@
     "discord@claude-plugins-official": true
   },
   "skipWorkflowUsageWarning": true,
-  "skipAutoPermissionPrompt": true
+  "skipAutoPermissionPrompt": true,
+  "autoMode": {
+    "allow": [
+      "$defaults",
+      "Read-only filesystem inspection is allowed anywhere on the filesystem, including outside the working directory. This covers ls, tree, find, cat, head, tail, nl, wc, sort, uniq, cut, stat, file, du, df, rg, grep, jq, sed -n, and read-only git subcommands (status, log, diff, show, blame, ls-files, rev-parse, branch --list, ...).",
+      "Compound read-only pipelines are allowed even when they assign a literal path to a shell variable first, and even when that path uses ~ or $HOME expansion. Example: K=~/workspace/proj/src; ls $K/*.py; grep -ln 'foo' $K/*.py. A tilde or variable in an assignment is not by itself a reason to prompt when every command in the pipeline is read-only.",
+      "This does not extend to a variable whose value comes from command substitution that fetches over the network or mutates state (e.g. K=$(curl ...)), nor to any pipeline segment that writes, deletes, or redirects output to a file."
+    ]
+  },
+  "autoUpdatesChannel": "latest"
 }
