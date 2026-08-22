@@ -130,7 +130,13 @@
       "mcp__plugin_slack_slack__slack_search_public_and_private",
       "mcp__plugin_slack_slack__slack_search_channels",
       "mcp__plugin_slack_slack__slack_search_users",
-      "mcp__plugin_slack_slack__slack_search_emojis"
+      "mcp__plugin_slack_slack__slack_search_emojis",
+      "Bash(/mnt/vast/home/vincent.pfister/.claude/fleet/fleet-send.py:*)",
+      "Bash(python3 /mnt/vast/home/vincent.pfister/.claude/fleet/board.py:*)",
+      "Bash(/mnt/vast/home/vincent.pfister/.claude/fleet/board.py:*)",
+      "Bash(/mnt/vast/home/vincent.pfister/.claude/fleet/fleet-request.py:*)",
+      "Edit(//mnt/vast/home/vincent.pfister/fleet-reviews/**)",
+      "Bash(/mnt/vast/home/vincent.pfister/.claude/fleet/fleet-infra-check.py:*)"
     ],
     "deny": [
       "Bash(find * -delete:*)",
@@ -181,6 +187,10 @@
           {
             "type": "command",
             "command": "$HOME/.claude/mode-mirror.sh"
+          },
+          {
+            "type": "command",
+            "command": "$HOME/.claude/fleet/hook-deliver.py"
           }
         ]
       }
@@ -202,6 +212,10 @@
           {
             "type": "command",
             "command": "$HOME/.claude/mode-mirror.sh"
+          },
+          {
+            "type": "command",
+            "command": "$HOME/.claude/fleet/hook-deliver.py"
           }
         ]
       }
@@ -213,6 +227,16 @@
           {
             "type": "command",
             "command": "$HOME/.claude/notify-needs-input.sh"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/.claude/fleet/hook-deliver.py"
           }
         ]
       }
@@ -231,8 +255,10 @@
     "slack@claude-plugins-official": true,
     "superpowers@claude-plugins-official": true,
     "pyright-lsp@claude-plugins-official": true,
-    "discord@claude-plugins-official": true
+    "discord@claude-plugins-official": true,
+    "grafana-mcp@claude-plugins-official": false
   },
+  "autoUpdatesChannel": "latest",
   "skipWorkflowUsageWarning": true,
   "skipAutoPermissionPrompt": true,
   "autoMode": {
@@ -242,6 +268,5 @@
       "Compound read-only pipelines are allowed even when they assign a literal path to a shell variable first, and even when that path uses ~ or $HOME expansion. Example: K=~/workspace/proj/src; ls $K/*.py; grep -ln 'foo' $K/*.py. A tilde or variable in an assignment is not by itself a reason to prompt when every command in the pipeline is read-only.",
       "This does not extend to a variable whose value comes from command substitution that fetches over the network or mutates state (e.g. K=$(curl ...)), nor to any pipeline segment that writes, deletes, or redirects output to a file."
     ]
-  },
-  "autoUpdatesChannel": "latest"
+  }
 }

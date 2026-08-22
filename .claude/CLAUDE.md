@@ -9,6 +9,29 @@
 - Never add co-author lines (e.g. `Co-Authored-By: Claude`) to commit messages.
 - Never mention Claude authorship or AI assistance in PR titles, PR bodies, code comments, READMEs, or any other documentation.
 
+## Be terse
+
+### Anything attached to code
+
+Code, comments, docstrings, commit messages, PR titles and bodies, GitHub and Linear.
+
+- Write only what the reader needs in order to act.
+- Keep *why the code is this way*: constraints, gotchas, non-obvious decisions. Cut
+  *how you got there*: what you tried, what you got wrong and fixed. The result is the
+  deliverable, not the story.
+- Comments and docstrings say what a dev needs in 6 months to work on the code. Nothing else.
+- Don't explain what the reader already knows, and don't restate the diff.
+- Scale to the change. Two lines of code do not need twenty lines of message.
+
+### Writing for humans
+
+Slack, Notion, email.
+
+- Still be brief, but here an explanation is sometimes the point. Judge by context.
+- Avoid bloat regardless.
+- Don't sound like an LLM: don't lean on dashes as punctuation, don't quote exact
+  figures where they add nothing, drop padding phrases and throat-clearing.
+
 ## Searching the monorepo
 
 - Avoid broad, repo-wide searches in the mistral monorepo — they are slow and noisy.
