@@ -1,7 +1,7 @@
 # Dotfiles
 
 Personal dotfiles managed with a [bare git repository](https://www.atlassian.com/git/tutorials/dotfiles) pattern.
-Tracks configuration for: **nvim**, **tmux**, **zsh** (macOS), **bash** (Linux), **alacritty**, **ghostty**.
+Tracks configuration for: **nvim**, **tmux**, **zsh** (macOS), **bash** (Linux), **alacritty**, **ghostty**, **Claude Code**.
 
 ---
 
@@ -211,6 +211,24 @@ Notes / gotchas:
 - A stale tmux **server** that predates this setup won't pick it up — `tmux kill-server`
   and reopen tmux from a GUI terminal (PAM itself is re-read per `sudo` call, so no
   restart is needed once the server is GUI-born).
+
+---
+
+## Claude Code (`~/.claude/`)
+
+Only hand-written config is tracked; everything the CLI generates is not.
+
+Tracked: `CLAUDE.md`, `settings.json`, `statusline.sh`, the hook scripts
+(`mode-mirror.sh`, `notify-needs-input.sh`), `skills/`, `fleet/*.py` + its `README.md`,
+and per-project skills under `projects/<slug>/skills/`.
+
+Not tracked: `settings.local.json` (auth env vars), `.credentials.json`, and all runtime
+state — `sessions/`, `projects/*/memory/`, `file-history/`, `backups/`, `daemon*`,
+`plugins/`, `jobs/`, `tasks/`, plus fleet state (`plan.yaml`, `BOARD.md`, `inbox/`,
+`requests/`, `archive/`).
+
+`settings.json` hooks invoke scripts by path, so a script it references must be tracked or
+every hook event fails on a fresh machine. When adding a hook, commit its script too.
 
 ---
 
