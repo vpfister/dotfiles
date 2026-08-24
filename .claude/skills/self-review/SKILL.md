@@ -187,6 +187,16 @@ code, not where you noticed it.
 - Land each cleanup in the layer that owns the code, then merge upward. Fixing it only
   at the top leaves the lower PRs — the ones reviewed first — carrying the flaw, and the
   reviewer reasonably assumes you did not notice.
+- **This one is easy to get wrong even knowing the rule**, because passes 3-9 are done
+  while sitting on the top branch, where every file is visible and one commit is natural.
+  So check explicitly: for each PR, `git diff --stat <its base> <its head>` and confirm
+  every file listed is one that PR introduces or legitimately wires up. A file owned by
+  a lower layer appearing in a higher PR means a cleanup landed in the wrong place.
+- To redistribute afterwards, per owning branch:
+  `git show <cleanup-sha> -- <path> | git apply --3way`, commit, then merge upward. The
+  upper layers absorb it without conflict because both sides reach identical content.
+  Re-run the per-layer tests: the top layer's count should be unchanged, which is what
+  proves the move preserved content rather than dropping some.
 - After any cross-layer change, re-run the per-layer checks from §1. A helper factored
   out at layer 3 and used at layer 2 compiles fine merged and breaks standalone.
 - Some cleanups genuinely span layers, such as a helper two PRs both duplicate. Put it
