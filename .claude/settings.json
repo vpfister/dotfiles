@@ -191,6 +191,10 @@
           {
             "type": "command",
             "command": "$HOME/.claude/fleet/hook-deliver.py"
+          },
+          {
+            "type": "command",
+            "command": "$HOME/.claude/terse-reminder.sh"
           }
         ]
       }
