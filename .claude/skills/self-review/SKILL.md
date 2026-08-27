@@ -67,6 +67,12 @@ trust the comment.
   touch. Behaviour you added elsewhere can falsify a comment you never opened.
 - Watch for comments that describe a limitation you have since removed, a mechanism you
   replaced, or a constant that has moved.
+- **Check the claim against the code, not only against history.** Drift is the easy case.
+  The harder one is a comment that was never true: it states the design someone intended
+  rather than the one they shipped, and it reads exactly like a drifted one. If a
+  docstring names a mechanism, find that mechanism in the code. A docstring claiming a
+  phrase-matching grammar the builder does not use will have a reader confidently wrong
+  about retrieval behaviour, and no test will fail.
 - Docstrings that describe the *old* contract are the most dangerous, because they read
   as the intended design and a reviewer may defend them.
 
@@ -87,7 +93,28 @@ weight, and if it contradicts the live one it actively misleads.
 Rename only when the new name genuinely helps a reader. A rename touching many call
 sites can swamp the real change; if so, note it for a follow-up.
 
-## 5. Consider splitting very long modules
+## 5. Check the types tell the truth
+
+A name can be right while the type lies about what it holds. Nothing else in this list
+catches that, and it is the class of thing a reviewer objects to on principle rather
+than by finding a bug.
+
+- **A sum encoded as a product.** `tuple[A, None] | tuple[None, B] | None` makes every
+  caller unpack both slots and assert one away. Return the union.
+- **`object` / `Any` / a bare `dict` where the real type is known.** It pushes the
+  knowledge to call sites as casts.
+- **One container holding two namespaces**, so callers immediately separate them again.
+  A dict of query placeholders that also carries request parameters means every
+  consumer, and every invariant over it, needs a carve-out.
+
+The symptom is in the tests, not the source: **repeated `cast(...)`, `isinstance` fences,
+or an assertion helper that skips certain keys.** Those exist because the type is not
+saying enough. Grep the test file for `cast(` before deciding this pass found nothing.
+
+Weigh it against churn like any rename: fixing a type touches every call site, so it is
+cheapest before the first consumer lands and dearest after review has started.
+
+## 6. Consider splitting very long modules
 
 Length alone is not a reason. Split when it makes the module easier to read:
 
@@ -102,7 +129,7 @@ jump between files to follow one thought. Splitting also rewrites file paths in 
 diff, which costs the reviewer; only worth it if the gain is real. If the module is
 long but linear and well-ordered, leave it.
 
-## 6. Cut the docstrings and comments
+## 7. Cut the docstrings and comments
 
 Apply the "Be terse" rules in `~/.claude/CLAUDE.md`. Cut *how you got there*: what
 broke, what you measured, what you tried. Keep *why the code is this way*: constraints,
@@ -114,7 +141,12 @@ already knows. Doc pointers should name the file by its full in-repo path.
 
 A twenty-line comment on a constant is almost always narrative.
 
-## 7. Factor the tests
+**This pass covers comments you did not write**, like §3. Otherwise it silently scopes
+itself to your own additions and leaves the longest blocks in the file untouched, which
+are usually the oldest ones. Look for the same explanation given three times in three
+places; keep one and point at it.
+
+## 8. Factor the tests
 
 - Repeated setup is a fixture or factory helper. Look for the same three or four lines
   opening many tests.
@@ -124,13 +156,17 @@ A twenty-line comment on a constant is almost always narrative.
 - Factor for readability, not for line count. A helper with five flags controlling what
   it builds is harder to read than the duplication it replaced.
 
-## 8. Prune weak tests
+## 9. Prune weak tests
 
 Delete tests that restate what a stronger test already pins:
 
 - Single-field assertions on a golden object a full-equality test covers.
 - Assertions that a constant is a non-empty string of the expected shape.
 - Negative substring checks structurally guaranteed to pass.
+- **Two separately-named tests asserting one sentence.** Duplication across functions
+  hides better than duplication inside one, because the names differ and neither looks
+  redundant on its own. A parametrize row covering the same input as a standalone test
+  is the common shape. Search by input, not by name.
 
 Also delete tests **fragile for reasons unrelated to their subject**: one hard-coding an
 environment-specific value fails for someone on a different cluster and teaches them to
@@ -139,7 +175,7 @@ distrust the suite.
 Keep edge cases, contract pins, and anything that failed before its fix. When unsure
 whether a test is weak, ask what bug it would catch. If you can name one, keep it.
 
-## 9. Look for near-duplicate logic
+## 10. Look for near-duplicate logic
 
 Two blocks doing the same thing with different arguments are a hazard when they must
 stay in step: a metric incremented beside a log line, an error counted beside a message.
@@ -148,14 +184,14 @@ Factor those to a single exit point so they cannot drift.
 Do not refactor pre-existing code the PR merely touches. A reviewer will rightly ask why
 unrelated error handling changed in a feature PR. Note it instead.
 
-## 10. Check the PR contains only what belongs to it
+## 11. Check the PR contains only what belongs to it
 
 - No unrelated files swept in: config, scratch files, another workstream's commits.
 - No debris: TODOs you meant to resolve, prints, commented-out code, debug helpers.
 - The change reads as one coherent unit. If it needs "and also" to describe, consider
   splitting it.
 
-## 11. Rewrite the descriptions last
+## 12. Rewrite the descriptions last
 
 Only now, when the code is final. Per PR:
 
@@ -171,7 +207,7 @@ Descriptions written mid-work are usually stale by the end.
 
 Target roughly 200 words.
 
-## 12. Ship
+## 13. Ship
 
 - Mark ready bottom-up, one at a time, each only after the one below is green.
 - Name who must approve. A code-owner or group gate is often the long pole.
