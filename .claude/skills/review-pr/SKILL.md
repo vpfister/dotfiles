@@ -58,3 +58,12 @@ decision, or an edit spanning files. Do not dress those as suggestions — a sug
 State the constraint and the consequence, not the process that found it. Say which
 suggestions you would actually take and which are optional — a reviewer who flags six things
 without ranking them has moved the triage work onto the author.
+
+Replying to a finding on your own PR, the same rule cuts two habits:
+
+- **No self-narration.** "so my assumption was wrong", "I had thought X" — your internal
+  history is not the reviewer's business. Say what the code does now.
+- **No praise formula.** "Good catch" is filler. If a finding reproduced, say it reproduced
+  and how; that is the actual acknowledgement.
+
+Say what changed and what you verified. Anything else gets edited out.
