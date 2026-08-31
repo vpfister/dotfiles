@@ -207,7 +207,35 @@ Descriptions written mid-work are usually stale by the end.
 
 Target roughly 200 words.
 
-## 13. Ship
+## 13. Close out the review threads
+
+Only applies on a second or later round. Cheap, and the one place where "I already handled
+that" is most likely to be false.
+
+**Ask who spoke LAST in each thread, not whether you replied in it.** A reviewer who answers
+your reply leaves a thread that contains your reply, so any check for "did I respond" passes
+it, and every UI renders it as a conversation you took part in. The follow-up is where the
+reviewer says your fix was incomplete, so it is exactly the message worth catching.
+
+```bash
+gh api repos/{owner}/{repo}/pulls/{n}/comments --paginate
+# group by (in_reply_to_id or id), sort each group by created_at,
+# flag any group whose last author is not you
+```
+
+Two legitimate reasons a reviewer has the last word, and they need separating:
+
+- They answered a point and expect nothing back, or are deliberately holding a thread open
+  as an owner marker for later work. Reply so it is on the record, change nothing.
+- They told you the fix missed something. That is unaddressed review, whatever the thread
+  looks like.
+
+**Verify the claim before acting on either.** A follow-up that downgrades the reviewer's own
+finding is still a claim: check it. And when the follow-up is right, check the code rather
+than the comment — the usual shape is a docstring left asserting the behaviour you just
+changed, three lines from an inline comment that now contradicts it.
+
+## 14. Ship
 
 - Mark ready bottom-up, one at a time, each only after the one below is green.
 - Name who must approve. A code-owner or group gate is often the long pole.
