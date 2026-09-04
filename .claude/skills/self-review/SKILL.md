@@ -184,6 +184,17 @@ Factor those to a single exit point so they cannot drift.
 Do not refactor pre-existing code the PR merely touches. A reviewer will rightly ask why
 unrelated error handling changed in a feature PR. Note it instead.
 
+**The exception is the pattern the PR exists to remove.** When the change closes a footgun —
+a default that hides a decision, a flag two things derive from separately — grep the same
+file for other instances before shipping. Fixing one and leaving its twin is worse than
+leaving both: the next reader sees the pattern addressed and assumes it is done, and a
+reviewer who asked about the instance they happened to see will assume you checked for the
+rest. "It was pre-existing" does not apply to the thing you are here to fix.
+
+Fix them all, or say in the thread which ones you left and why. **If you decide to raise it
+rather than fix it, raise it before you push** — an intention formed while editing is not a
+message anyone received.
+
 ## 11. Check the PR contains only what belongs to it
 
 - No unrelated files swept in: config, scratch files, another workstream's commits.
