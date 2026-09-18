@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>__TITLE__</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+<style>
+  :root{
+    --bg:#fbfbfa; --fg:#1c1c1a; --muted:#6b6b66; --rule:#e3e3df;
+    --accent:#8a5a2b; --accent-soft:#f3ece3;
+    --warn-bg:#fdf6e7; --warn-br:#d9a441;
+    --note-bg:#eef4f7; --note-br:#5b8fa8;
+    --ok-bg:#eef5ee; --ok-br:#5f8a5f;
+    --path-bg:#f0efeb;
+    --max:820px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#16171a; --fg:#e4e3df; --muted:#96958f; --rule:#2c2e33;
+      --accent:#d9a441; --accent-soft:#26241f;
+      --warn-bg:#2a2418; --warn-br:#d9a441;
+      --note-bg:#1a2329; --note-br:#5b8fa8;
+      --ok-bg:#1b241b; --ok-br:#6f9a6f;
+      --path-bg:#212327;
+    }
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0; background:var(--bg); color:var(--fg);
+    font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{display:flex; align-items:flex-start; max-width:1240px; margin:0 auto}
+
+  nav{
+    position:sticky; top:0; height:100vh; overflow-y:auto;
+    width:270px; flex:0 0 270px; padding:28px 18px 40px 24px;
+    border-right:1px solid var(--rule); font-size:13.5px;
+  }
+  nav .brand{font-weight:700; font-size:14px; letter-spacing:.02em; margin-bottom:2px}
+  nav .brandsub{color:var(--muted); font-size:12px; margin-bottom:18px}
+  nav ol{list-style:none; margin:0; padding:0}
+  nav li{margin:0 0 1px}
+  nav a{
+    display:flex; justify-content:space-between; gap:8px;
+    text-decoration:none; color:var(--fg); padding:5px 8px; border-radius:5px;
+    border-left:2px solid transparent;
+  }
+  nav a:hover{background:var(--accent-soft)}
+  nav a.active{background:var(--accent-soft); border-left-color:var(--accent); font-weight:600}
+  nav a .t{color:var(--muted); font-variant-numeric:tabular-nums; font-size:11.5px; flex:0 0 auto; padding-top:2px}
+  nav .sep{margin:14px 0 6px; color:var(--muted); font-size:11px; text-transform:uppercase; letter-spacing:.09em; font-weight:600}
+  nav .ghnote{
+    margin-top:22px; padding-top:14px; border-top:1px solid var(--rule);
+    font-size:11.5px; color:var(--muted); line-height:1.5;
+  }
+
+  main{flex:1 1 auto; min-width:0; padding:40px 44px 140px; max-width:var(--max)}
+  h1{font-size:30px; line-height:1.25; margin:0 0 6px; letter-spacing:-.015em}
+  .sub{color:var(--muted); margin:0 0 20px; font-size:15px}
+  h2{
+    font-size:21px; margin:52px 0 6px; padding-top:16px; letter-spacing:-.01em;
+    border-top:1px solid var(--rule); scroll-margin-top:20px;
+  }
+  h2 .num{color:var(--accent); font-variant-numeric:tabular-nums; margin-right:8px; font-weight:700}
+  h3{font-size:15.5px; margin:26px 0 6px; letter-spacing:.005em}
+  .budget{color:var(--muted); font-size:12.5px; margin:0 0 14px; font-variant-numeric:tabular-nums}
+  p{margin:0 0 13px}
+  ul,ol{margin:0 0 13px; padding-left:22px}
+  li{margin:0 0 5px}
+  code{
+    font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+    font-size:.875em; background:var(--path-bg); padding:1.5px 5px; border-radius:4px;
+  }
+  pre{margin:0 0 16px; border-radius:8px; overflow:auto; font-size:13px; line-height:1.55}
+  pre code{background:none; padding:0; font-size:13px}
+  pre.hl{padding:0}
+
+  .codelabel{
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:11.5px;
+    color:var(--muted); background:var(--path-bg); border:1px solid var(--rule);
+    border-bottom:none; border-radius:8px 8px 0 0; padding:6px 12px;
+    display:flex; justify-content:space-between; align-items:center; gap:10px;
+    margin-top:2px;
+  }
+  .codelabel + pre{border-radius:0 0 8px 8px; margin-bottom:16px}
+  .codelabel .lines{flex:0 0 auto; opacity:.8}
+
+  a.ghlink{color:inherit; text-decoration:none; border-bottom:1px dotted var(--muted)}
+  a.ghlink:hover{color:var(--accent); border-bottom-color:var(--accent)}
+  a.ghlink::after{content:" \2197"; font-size:.85em; opacity:.5}
+  .codelabel a.ghlink{border-bottom:none}
+  .codelabel a.ghlink:hover{color:var(--accent)}
+  code a.ghlink{border-bottom-style:dotted}
+  a.oldlink{color:inherit; text-decoration:none; border-bottom:1px dotted var(--muted); opacity:.85}
+  a.oldlink::after{content:" \29D6"; font-size:.85em; opacity:.55}
+  a.oldlink:hover{color:var(--accent)}
+
+  .paths{
+    background:var(--path-bg); border:1px solid var(--rule); border-radius:8px;
+    padding:11px 14px; margin:0 0 18px; font-size:12.7px;
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace; line-height:1.85;
+  }
+  .paths .k{color:var(--muted); user-select:none}
+  .paths div{white-space:nowrap; overflow-x:auto}
+
+  .callout{border-left:3px solid; border-radius:0 7px 7px 0; padding:11px 15px; margin:0 0 16px; font-size:14.5px}
+  .callout p:last-child,.callout ul:last-child,.callout ol:last-child{margin-bottom:0}
+  .callout .lbl{font-weight:700; font-size:11.5px; text-transform:uppercase; letter-spacing:.07em; display:block; margin-bottom:4px}
+  .warn{background:var(--warn-bg); border-color:var(--warn-br)}
+  .warn .lbl{color:var(--warn-br)}
+  .note{background:var(--note-bg); border-color:var(--note-br)}
+  .note .lbl{color:var(--note-br)}
+  .ok{background:var(--ok-bg); border-color:var(--ok-br)}
+  .ok .lbl{color:var(--ok-br)}
+
+  table{border-collapse:collapse; width:100%; font-size:14px; margin:0 0 18px}
+  th,td{text-align:left; padding:7px 10px; border-bottom:1px solid var(--rule); vertical-align:top}
+  th{font-size:11.5px; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); font-weight:600}
+  td code{font-size:12.4px}
+  .del{color:var(--muted); text-decoration:line-through}
+
+  .ascii{
+    background:var(--path-bg); border:1px solid var(--rule); border-radius:8px;
+    padding:14px 16px; font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+    font-size:12.5px; line-height:1.5; white-space:pre; overflow-x:auto; margin:0 0 18px;
+  }
+  .banner{
+    background:var(--accent-soft); border:1px solid var(--rule); border-radius:8px;
+    padding:9px 14px; margin:0 0 26px; font-size:13px; color:var(--muted);
+  }
+  .banner code{background:none; padding:0}
+  a{color:var(--accent)}
+  .top{display:block; margin-top:10px; font-size:12px; color:var(--muted); text-decoration:none}
+  @media (max-width:960px){
+    nav{display:none} main{padding:28px 20px 100px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<nav>
+  <div class="brand">__BRAND__</div>
+  <div class="brandsub">__BRANDSUB__</div>
+__NAV__
+  <div class="ghnote">__NAVNOTE__</div>
+</nav>
+
+<main>
+
+<h1>__H1__</h1>
+<p class="sub">__SUBTITLE__</p>
+
+<p class="banner">__BANNER__</p>
+
+__BODY__
+
+</main>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>
+  hljs.highlightAll();
+
+  // [data-gh="path#L1-L2"] -> permalink pinned to the reviewed commit
+  const GH_BASE = "__GHBASE__";
+  document.querySelectorAll('[data-gh]').forEach(el => {
+    const a = document.createElement('a');
+    a.href = GH_BASE + el.getAttribute('data-gh');
+    a.target = '_blank'; a.rel = 'noopener noreferrer';
+    a.className = 'ghlink';
+    a.title = el.getAttribute('data-gh');
+    while (el.firstChild) a.appendChild(el.firstChild);
+    el.appendChild(a);
+  });
+  document.querySelectorAll('a.oldlink').forEach(a => { a.target='_blank'; a.rel='noopener noreferrer'; });
+
+  // scrollspy
+  const links = [...document.querySelectorAll('nav a[href^="#"]')];
+  const map = new Map(links.map(a => [a.getAttribute('href').slice(1), a]));
+  const obs = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(a => a.classList.remove('active'));
+        const a = map.get(e.target.id);
+        if (a) a.classList.add('active');
+      }
+    });
+  }, { rootMargin: '0px 0px -75% 0px', threshold: 0 });
+  document.querySelectorAll('main h2[id]').forEach(h => obs.observe(h));
+</script>
+</body>
+</html>
