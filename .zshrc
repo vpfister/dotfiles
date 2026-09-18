@@ -46,8 +46,13 @@ export LS_COLORS="di=1;36:ln=35:so=32:pi=33:ex=31:bd=34;46:cd=34;43:su=30;41:sg=
 
 export CLAUDE_CODE_USE_FOUNDRY=1
 export CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1
-export ANTHROPIC_FOUNDRY_BASE_URL='https://foundry-proxy.cheetah-koi.ts.net/anthropic'
+if [[ "$(uname)" == "Darwin" ]]; then
+  export ANTHROPIC_FOUNDRY_BASE_URL='https://foundry-proxy.cheetah-koi.ts.net/anthropic'
+else
+  export ANTHROPIC_FOUNDRY_BASE_URL='http://codex-foundry-proxy.tenant-slurm/anthropic'
+fi
 export ANTHROPIC_FOUNDRY_API_KEY='dont-worry-this-key-will-be-auto-injected'
+export ANTHROPIC_MODEL='claude-opus-5'
 export ANTHROPIC_DEFAULT_OPUS_MODEL='claude-opus-4-6'
 export ANTHROPIC_DEFAULT_SONNET_MODEL='claude-sonnet-4-6'
 export ANTHROPIC_DEFAULT_HAIKU_MODEL='claude-haiku-4-5'
