@@ -1,6 +1,6 @@
 ---
 name: review-pr
-description: Review someone else's pull request and post the feedback — propose small self-contained changes as one-click GitHub suggestion blocks rather than prose, batched into a single review. Use when commenting on, reviewing, or suggesting changes to a PR you do not own.
+description: Review a pull request you did not write and post the feedback — propose small self-contained changes as one-click GitHub suggestion blocks rather than prose, batched into a single review, and omit anything the author could have written themselves. Use when commenting on, reviewing, or suggesting changes to a PR you did not author, including one raised by a teammate or another agent on your behalf, or one carrying code you originally wrote.
 ---
 
 # Reviewing someone else's PR
@@ -52,6 +52,23 @@ decision, or an edit spanning files. Do not dress those as suggestions — a sug
   `gh pr view N --json files --jq '.files[].path'`.
 - Rehearse unfamiliar formatting on a PR of your own and delete it:
   `gh api -X DELETE repos/{owner}/{repo}/pulls/comments/{id}`.
+
+## What not to post
+
+A review adds the facts the author could not produce, plus the judgement. For each line ask
+what the author does differently for having read it. If the answer is nothing, cut it.
+
+- **Their own evidence.** The body says "8 tests pass"; a table repeating it is noise. If
+  independent verification matters, "reproduced locally" is the whole sentence.
+- **Anything in the diff.** "`foo.py` untouched", file counts, insertion counts.
+- **True facts about something else.** A result describing the base branch, or a decision
+  next door, reads as evidence about *this* diff. Route it to wherever that decision lives.
+- **Proof that you did the work.** The urge to show five checks ran is about the reviewer,
+  not the change.
+
+So when everything passes, the review is one line or none. If the only item is a wording fix
+in the body, tell the author directly and let them make it — a comment saying so is stale the
+moment they do.
 
 ## Tone
 
