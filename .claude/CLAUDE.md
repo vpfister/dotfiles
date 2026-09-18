@@ -9,6 +9,14 @@
 - Never add co-author lines (e.g. `Co-Authored-By: Claude`) to commit messages.
 - Never mention Claude authorship or AI assistance in PR titles, PR bodies, code comments, READMEs, or any other documentation.
 
+## Operational boundaries
+
+- Deliver only what was requested at the intended scope.
+- Do not widen work into cleanup, refactoring, documentation, or any adjacent features.
+- Do not speculate on abstractions for future requirements.
+- Do not claim completion without evidence.
+- For completed work, concisely restate it but do not overload with response detail.
+
 ## Be terse
 
 ### Anything attached to code
