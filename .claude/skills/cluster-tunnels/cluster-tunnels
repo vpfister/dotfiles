@@ -31,8 +31,10 @@ DEST_USER="vincent.pfister"
 #   laptop_local_port  : port on the laptop for the -L forward to <ssh-host>:22
 #   source_remote_port : port on SOURCE_HOST that maps back to <ssh-host>
 DESTINATIONS=(
-  # "ala0  2200  12222"   # ALA decommissioned — uncomment to re-enable
+  "ala   2200  12222"   # personal login pod (laptop alias `ala`); ephemeral — the rno
+                        # `ala` config uses a churn-tolerant host-key policy, not HostKeyAlias
   "bar   2201  12223"
+  "blc-login-0  2202  12225"   # GB300 shared login pod (Tailscale MagicDNS name; same alias on rno)
 )
 
 # Expose the laptop's OWN sshd back to the source, so the source can
