@@ -8,6 +8,9 @@
 Lanes must use this rather than editing requests/<lane>.md directly: the
 requests directory lives under ~/.claude/, which Claude Code guards, so direct
 Write/Edit calls trigger a permission prompt. Bash helpers do not.
+
+Filing alone does not wake SUPER — it only reads requests/ on a sweep, and an
+idle session starts no sweep. So this prints the SendMessage call to make next.
 """
 import argparse
 import fcntl
@@ -20,6 +23,29 @@ FLEET = os.path.dirname(os.path.abspath(__file__))
 REQ = os.path.join(FLEET, "requests")
 LANES = os.path.join(FLEET, "lanes.json")
 KINDS = ("gate-satisfied", "new-dependency", "blocked", "descope", "question")
+
+sys.path.insert(0, FLEET)
+try:
+    import fleet_sessions
+except ImportError:                       # resolution is optional, filing is not
+    fleet_sessions = None
+
+
+def print_ping(lane, kind, subject):
+    if fleet_sessions is None:
+        return
+    try:
+        targets = fleet_sessions.sessions_named("SUPER")
+    except Exception:
+        return
+    if not targets:
+        print("\nSUPER has no live session file. The request stays queued for its")
+        print("next sweep. Check ListAgents before assuming SUPER is down.")
+        return
+    print("\nWAKE SUPER — call the SendMessage tool now:")
+    print('  to:      %r' % (targets[0].get("name") or "SUPER"))
+    print('  message: fleet request from %s (%s): %s — triage %s'
+          % (lane, kind, subject, "~/.claude/fleet/requests/%s.md" % lane))
 
 
 def main():
@@ -58,6 +84,7 @@ def main():
     n = open(path).read().count("--- REQUEST ---")
     print("filed for %s (%d pending, SUPER triages next sweep): %s"
           % (a.lane, n, a.subject))
+    print_ping(a.lane, a.kind, a.subject)
 
 
 if __name__ == "__main__":

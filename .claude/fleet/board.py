@@ -235,7 +235,7 @@ def main():
         a("## Traffic")
         a("")
         # A lane that is ALREADY idle will not fire Stop again, so queued mail sits
-        # undelivered until someone types in that session. Surface it loudly.
+        # undelivered until it is pinged with SendMessage. Surface it loudly.
         name_of = {v.get("id"): k for k, v in obs.items()}
         lane_status = {}
         for lname, o in obs.items():
@@ -245,8 +245,9 @@ def main():
         for k, v in inb.items():
             st = lane_status.get(k)
             if st == "idle":
-                a("- inbox `%s`: %d message(s) queued — **WILL NOT DELIVER, lane is"
-                  " idle.** Type anything in that session to release it." % (k, v))
+                a("- inbox `%s`: %d message(s) queued — **lane is idle, not"
+                  " delivered yet.** SendMessage that session one line telling it to"
+                  " drain its inbox." % (k, v))
             elif st is None:
                 a("- inbox `%s`: %d message(s) queued — lane not live; will deliver"
                   " on next session start" % (k, v))
