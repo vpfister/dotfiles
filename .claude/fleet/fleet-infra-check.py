@@ -16,7 +16,11 @@ import os
 import subprocess
 import sys
 
-HOSTS = ["bar", "ala0"]
+# `ala0` was the SHARED ALA login pod and no longer resolves at all (2026-09-04).
+# It is replaced everywhere by `ala`, Vincent's personal login pod. A stale `ala0`
+# does not fail like an outage — ssh returns "Name or service not known", which
+# this tool classifies as kind="config", not "down".
+HOSTS = ["bar", "ala"]
 
 
 def run(cmd, timeout=20):
@@ -54,7 +58,13 @@ def check():
     out = {"tunnels": {}, "ssh_agent": {}, "all_up": True}
 
     for h in HOSTS:
-        rc, msg = run("ssh -o BatchMode=yes -o ConnectTimeout=10 %s true" % h)
+        # Retry once before calling a host down. The ALA login pod runs at load
+        # 15-25, where a 10s connect can time out on a perfectly healthy tunnel;
+        # the first probe then reports "laptop asleep?" and lanes park for
+        # nothing. A false DOWN is far more expensive here than a slow check.
+        rc, msg = run("ssh -o BatchMode=yes -o ConnectTimeout=25 %s true" % h)
+        if rc != 0 and "denied" not in msg.lower() and "refused operation" not in msg.lower():
+            rc, msg = run("ssh -o BatchMode=yes -o ConnectTimeout=25 %s true" % h, timeout=35)
         up = rc == 0
         reason, kind = "", ""
         if not up:
@@ -140,6 +150,17 @@ def main():
         print("File a request:  fleet-request.py <your-lane> --kind blocked \\")
         print("    --subject 'BLOCKED-BY-TUNNEL: <what you were doing>' ...")
         print("Then park that work and do something that needs no tunnel.")
+    # State the exit status in the TEXT as well. A lane reported reading
+    # "tunnel ala DOWN ... park that work" alongside exit 0 and concluded the
+    # tool contradicted itself. The exit path is correct (verified: a genuinely
+    # unreachable host yields 1) — what breaks is piping, e.g.
+    # `fleet-infra-check.py | head -3`, where $? is head's status, not ours.
+    # Printing it removes the ambiguity without pretending the shell behaves
+    # differently.
+    print("exit status: %d (%s)" % (0 if r["all_up"] else 1,
+                                    "all up" if r["all_up"] else "something down"))
+    print("Piping this command replaces $? with the pipe's status — read this"
+          " line, not $?, if you piped.")
     sys.exit(0 if r["all_up"] else 1)
 
 
