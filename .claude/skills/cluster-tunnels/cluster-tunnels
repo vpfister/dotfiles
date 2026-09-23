@@ -35,6 +35,7 @@ DESTINATIONS=(
                         # `ala` config uses a churn-tolerant host-key policy, not HostKeyAlias
   "bar   2201  12223"
   "blc-login-0  2202  12225"   # GB300 shared login pod (Tailscale MagicDNS name; same alias on rno)
+  "sko0         2203  12226"   # SKO/eun-05a shared login pod (laptop `sko0` -> slurm-sko-login-0)
 )
 
 # Expose the laptop's OWN sshd back to the source, so the source can
