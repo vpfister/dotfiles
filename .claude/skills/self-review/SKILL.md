@@ -153,6 +153,10 @@ places; keep one and point at it.
 - Near-identical tests differing in one value are one `@pytest.mark.parametrize`.
 - After moving setup into a helper, re-run the type checker: assignment inside a helper
   stops narrowing the type at the call site.
+- A helper must not hand out shared mutable state. A module-level dict or list assigned
+  into what it returns is aliased, not copied, so one test mutating it changes what later
+  tests see. Everything stays green until someone adds a mutating test, so reading is the
+  only thing that finds it. Copy at the boundary: `dict(...)`, `[dict(x) for x in ...]`.
 - Factor for readability, not for line count. A helper with five flags controlling what
   it builds is harder to read than the duplication it replaced.
 
