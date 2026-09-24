@@ -1,0 +1,29 @@
+onboarding = false
+
+[theme]
+name = "catppuccin"
+
+[keys]
+prefix = "ctrl+a"
+detach = "prefix+d"
+split_vertical = "prefix+|"
+split_horizontal = "prefix+minus"
+
+[ui]
+# Shared on purpose: herdr has no per-machine config layering, so this accent is
+# the same everywhere. Per-cluster colours live in ~/.config/host-style.sh (tmux).
+accent = "#b4befe"
+pane_outer_borders = false
+pane_gaps = false
+prompt_new_tab_name = false
+tab_bar_right = [
+  { type = "zoom" },
+  { type = "hostname" },
+  { type = "datetime", format = "%Y-%m-%d %H:%M" },
+]
+
+[ui.toast]
+delivery = "terminal"
+
+[ui.sound]
+enabled = false

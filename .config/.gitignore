@@ -6,3 +6,8 @@ host-style.sh
 # drops here (service.json = local pid/port) is machine-local state.
 opencode/*
 !opencode/opencode.jsonc
+
+# herdr: only config.toml is tracked. Logs, sockets, session state, and the
+# agent integrations herdr installs itself are machine-local.
+herdr/*
+!herdr/config.toml
