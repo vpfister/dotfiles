@@ -1,7 +1,7 @@
 # Dotfiles
 
 Personal dotfiles managed with a [bare git repository](https://www.atlassian.com/git/tutorials/dotfiles) pattern.
-Tracks configuration for: **nvim**, **tmux**, **zsh** (macOS), **bash** (Linux), **alacritty**, **ghostty**, **Claude Code**.
+Tracks configuration for: **nvim**, **tmux**, **zsh** (macOS), **bash** (Linux), **alacritty**, **ghostty**, **Claude Code**, **opencode**.
 
 ---
 

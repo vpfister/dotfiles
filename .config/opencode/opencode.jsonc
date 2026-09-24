@@ -1,0 +1,183 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "share": "disabled",
+  "experimental": {
+    "disable_paste_summary": true
+  },
+  "permission": {
+    "external_directory": {
+      "~/tmp/**": "allow"
+    }
+  },
+  // Default model and model for conversation titles
+  "model": "openai-foundry/zai-glm-5-3",
+  "small_model": "anthropic-foundry/claude-haiku-4-5",
+  "enabled_providers": [
+    "mistral",
+    "anthropic-foundry",
+    "openai-foundry"
+  ],
+  "provider": {
+    "anthropic-foundry": {
+      "name": "Anthropic (Foundry)",
+      "npm": "@ai-sdk/anthropic", // Set explicitly
+      "options": {
+        // Host differs per machine; set FOUNDRY_PROXY in .bashrc/.zshrc.
+        "baseURL": "{env:FOUNDRY_PROXY}/anthropic/v1",
+        "apiKey": "dont-worry-it-will-be-injected",
+        // Required on clusters. Local requests are identified automatically by Tailscale.
+        "headers": {
+          "x-hostname": "{env:HOSTNAME}",
+          "x-region": "{env:REGION}",
+          "x-slurm-job-user": "{env:SLURM_JOB_USER}",
+          "x-user": "{env:USER}",
+          "x-slurm-job-id": "{env:SLURM_JOB_ID}"
+        }
+      },
+      "models": {
+        "claude-opus-4-8": {
+          "variants": {
+            "max": {
+              "thinking": {
+                "type": "adaptive"
+              },
+              "outputConfig": {
+                "effort": "max"
+              }
+            },
+            "high": {
+              "thinking": {
+                "type": "adaptive"
+              },
+              "outputConfig": {
+                "effort": "high"
+              }
+            },
+            "default": {}
+          }
+        },
+        "claude-opus-4-6": {
+          "variants": {
+            "max": {
+              "thinking": {
+                "type": "adaptive"
+              },
+              "outputConfig": {
+                "effort": "max"
+              }
+            },
+            "high": {
+              "thinking": {
+                "type": "adaptive"
+              },
+              "outputConfig": {
+                "effort": "high"
+              }
+            },
+            "default": {}
+          }
+        },
+        "claude-sonnet-4-6": {},
+        "claude-haiku-4-5": {}
+      }
+    },
+    "openai-foundry": {
+      "name": "OpenAI (Foundry)",
+      "npm": "@ai-sdk/openai",
+      "options": {
+        // Host differs per machine; set FOUNDRY_PROXY in .bashrc/.zshrc.
+        "baseURL": "{env:FOUNDRY_PROXY}/openai/v1",
+        "apiKey": "dont-worry-it-will-be-injected",
+        // Required on clusters. Local requests are identified automatically by Tailscale.
+        "headers": {
+          "x-hostname": "{env:HOSTNAME}",
+          "x-region": "{env:REGION}",
+          "x-slurm-job-user": "{env:SLURM_JOB_USER}",
+          "x-user": "{env:USER}",
+          "x-slurm-job-id": "{env:SLURM_JOB_ID}"
+        }
+      },
+      "models": {
+        "gpt-5.6-sol": {
+          "reasoning": true,
+          "variants": {
+            "medium": {
+              "options": {
+                "reasoningEffort": "medium"
+              }
+            },
+            "high": {
+              "options": {
+                "reasoningEffort": "high"
+              }
+            }
+          }
+        },
+        "gpt-5.6-terra": {
+          "reasoning": true,
+          "variants": {
+            "medium": {
+              "options": {
+                "reasoningEffort": "medium"
+              }
+            },
+            "high": {
+              "options": {
+                "reasoningEffort": "high"
+              }
+            }
+          }
+        },
+        "gpt-5.6-luna": {
+          "reasoning": true,
+          "variants": {
+            "medium": {
+              "options": {
+                "reasoningEffort": "medium"
+              }
+            },
+            "high": {
+              "options": {
+                "reasoningEffort": "high"
+              }
+            }
+          }
+        },
+        "gpt-6-astra": {
+          "reasoning": true,
+          "variants": {
+            "medium": {
+              "options": {
+                "reasoningEffort": "medium"
+              }
+            },
+            "high": {
+              "options": {
+                "reasoningEffort": "high"
+              }
+            }
+          }
+        },
+        "zai-glm-5-2": {
+          "name": "GLM 5.2",
+          "reasoning": true,
+          "variants": {
+            "medium": {
+              "options": {
+                "reasoningEffort": "medium"
+              }
+            },
+            "high": {
+              "options": {
+                "reasoningEffort": "high"
+              }
+            }
+          }
+        }
+      }
+    },
+    "mistral": {
+      "models": {},
+    },
+  },
+}

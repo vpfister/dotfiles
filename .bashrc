@@ -148,6 +148,15 @@ else
   unset _sock
 fi
 
+# --- Foundry proxy (consumed by ~/.config/opencode/opencode.jsonc) ---
+if [[ "$(uname)" == "Darwin" ]]; then
+  export FOUNDRY_PROXY='https://foundry-proxy.cheetah-koi.ts.net'
+else
+  export FOUNDRY_PROXY='http://codex-foundry-proxy.tenant-slurm'
+  # bash sets HOSTNAME but does not export it; the proxy needs the x-hostname header.
+  export HOSTNAME
+fi
+
 # --- Lazygit - Catppuccin Mocha Blue theme ---
 export LG_CONFIG_FILE="$HOME/.config/lazygit/config.yml"
 
@@ -184,3 +193,6 @@ fi
 # Machine-local secrets (API keys, credentials) — not tracked by dotfiles
 [ -f "$HOME/.secrets" ] && . "$HOME/.secrets"
 export PATH="$HOME/.local/bin:$PATH"
+
+# opencode
+export PATH=/mnt/vast/home/vincent.pfister/.opencode/bin:$PATH

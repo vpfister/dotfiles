@@ -1,3 +1,8 @@
 # Per-machine tmux host styling: must never be committed.
 # Copy host-style.example.sh -> host-style.sh and edit locally.
 host-style.sh
+
+# opencode: only the hand-written config is tracked. Everything else the CLI
+# drops here (service.json = local pid/port) is machine-local state.
+opencode/*
+!opencode/opencode.jsonc
