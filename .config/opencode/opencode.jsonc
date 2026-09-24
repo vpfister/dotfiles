@@ -9,8 +9,10 @@
       "~/tmp/**": "allow"
     }
   },
-  // Default model and model for conversation titles
-  "model": "openai-foundry/zai-glm-5-3",
+  // Default model and model for conversation titles.
+  // zai-glm-5-3 has no deployment on the Foundry OpenAI proxy (mistral/ has it, but
+  // that provider is unauthed here), so 5.2 is the newest GLM that actually resolves.
+  "model": "openai-foundry/zai-glm-5-2",
   "small_model": "anthropic-foundry/claude-haiku-4-5",
   "enabled_providers": [
     "mistral",
