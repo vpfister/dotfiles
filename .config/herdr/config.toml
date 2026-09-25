@@ -27,3 +27,73 @@ delivery = "terminal"
 
 [ui.sound]
 enabled = false
+
+[[keys.command]]
+key = "prefix+t"
+type = "plugin_action"
+command = "herdr-navigator.open"
+description = "jump to anything"
+
+# herdr-nav-plus
+[[keys.command]]
+key = "ctrl+h"
+type = "plugin_action"
+command = "herdr-nav-plus.left"
+description = "navigate left (vim/pane)"
+
+[[keys.command]]
+key = "ctrl+j"
+type = "plugin_action"
+command = "herdr-nav-plus.down"
+description = "navigate down (vim/pane/workspace)"
+
+[[keys.command]]
+key = "ctrl+k"
+type = "plugin_action"
+command = "herdr-nav-plus.up"
+description = "navigate up (vim/pane/workspace)"
+
+[[keys.command]]
+key = "ctrl+l"
+type = "plugin_action"
+command = "herdr-nav-plus.right"
+description = "navigate right (vim/pane)"
+
+# drovr
+[[keys.command]]
+key = "prefix+M"
+type = "plugin_action"
+command = "drovr.move-tab"
+description = "move tab to workspace"
+
+[[keys.command]]
+key = "prefix+m"
+type = "plugin_action"
+command = "drovr.move-pane"
+description = "move pane to tab"
+
+# herdr-resurrect
+[[keys.command]]
+key = "prefix+ctrl+s"
+type = "plugin_action"
+command = "ntindle.herdr-resurrect.save"
+description = "resurrect: save"
+
+[[keys.command]]
+key = "prefix+ctrl+r"
+type = "plugin_action"
+command = "ntindle.herdr-resurrect.restore"
+description = "resurrect: restore"
+
+# named spaces (below)
+[[keys.command]]
+key = "prefix+S"
+type = "plugin_action"
+command = "ntindle.herdr-resurrect.save-space"
+description = "resurrect: save this space as…"
+
+[[keys.command]]
+key = "prefix+O"
+type = "plugin_action"
+command = "ntindle.herdr-resurrect.open-space"
+description = "resurrect: open saved space…"

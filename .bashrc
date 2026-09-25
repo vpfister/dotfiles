@@ -199,4 +199,9 @@ fi
 export PATH="$HOME/.local/bin:$PATH"
 
 # opencode
-export PATH=/mnt/vast/home/vincent.pfister/.opencode/bin:$PATH
+export PATH="$HOME/.opencode/bin:$PATH"
+
+# herdr-automatic-rename: live tab naming hook
+for _f in $HOME/.config/herdr/plugins/github/herdr-automatic-rename-*/shell/hook.bash; do
+  [ -r "$_f" ] && { source "$_f"; break; }
+done
