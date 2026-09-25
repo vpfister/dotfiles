@@ -59,6 +59,10 @@ alias dotfiles='git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME'
 command -v lazygit &>/dev/null && alias lgdots='lazygit --git-dir=$HOME/.dotfiles/ --work-tree=$HOME'
 [ -x /mnt/vast/shared/eyeballer_cli/eye ] && alias eye='/mnt/vast/shared/eyeballer_cli/eye'
 
+# Claude Code (cc shadows /usr/bin/cc interactively; build tools are unaffected)
+alias cc='CLAUDE_CODE_DISABLE_AGENT_VIEW=1 claude'
+alias cca='CLAUDE_CODE_DISABLE_AGENT_VIEW=0 claude agents'
+
 if [ -f ~/.bash_aliases ]; then
   . ~/.bash_aliases
 fi

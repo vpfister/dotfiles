@@ -60,6 +60,10 @@ export ANTHROPIC_DEFAULT_OPUS_MODEL='claude-opus-4-6'
 export ANTHROPIC_DEFAULT_SONNET_MODEL='claude-sonnet-4-6'
 export ANTHROPIC_DEFAULT_HAIKU_MODEL='claude-haiku-4-5'
 
+# cc shadows /usr/bin/cc interactively; build tools are unaffected
+alias cc='CLAUDE_CODE_DISABLE_AGENT_VIEW=1 claude'
+alias cca='CLAUDE_CODE_DISABLE_AGENT_VIEW=0 claude agents'
+
 # --- Dotfiles bare repo management ---
 alias dotfiles='git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME'
 command -v lazygit &>/dev/null && alias lgdots='lazygit --git-dir=$HOME/.dotfiles/ --work-tree=$HOME'
