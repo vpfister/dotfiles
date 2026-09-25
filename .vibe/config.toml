@@ -1,4 +1,4 @@
-active_model = "opus-4.6"
+active_model = "codex"
 vim_keybindings = false
 disable_welcome_banner_animation = false
 autocopy_to_clipboard = true
@@ -21,27 +21,7 @@ tool_paths = []
 applied_migrations = [
     "bash_read_only_defaults_v1",
 ]
-
-[[mcp_servers]]
-name = "edgartools"
-transport = "stdio"
-command = "uvx"
-args = [
-    "--from",
-    "edgartools[ai]",
-    "edgartools-mcp",
-]
-enabled_tools = []
-disabled_tools = []
-agent_paths = []
-enabled_agents = []
-disabled_agents = []
-skill_paths = []
-enabled_skills = []
-disabled_skills = []
-
-[mcp_servers.env]
-EDGAR_IDENTITY = "MistralAI vincent.pfister@mistral.ai"
+theme = "catppuccin-macchiato"
 
 [[providers]]
 name = "mistral"
@@ -69,6 +49,19 @@ api_base = "http://codex-foundry-proxy.tenant-slurm/anthropic"
 api_key_env_var = "ANTHROPIC_FOUNDRY_API_KEY"
 api_style = "anthropic"
 backend = "generic"
+
+[providers.extra_headers]
+x-user = "vincent.pfister"
+
+[[providers]]
+name = "foundry-openai"
+api_base = "http://codex-foundry-proxy.tenant-slurm/openai/v1"
+api_key_env_var = "AZURE_OPENAI_API_KEY"
+api_style = "openai-responses"
+backend = "generic"
+
+[providers.extra_headers]
+x-user = "vincent.pfister"
 
 [[models]]
 name = "mistral-vibe-cli-latest"
@@ -113,6 +106,12 @@ alias = "sonnet-4.6"
 name = "claude-haiku-4-5"
 provider = "foundry-anthropic"
 alias = "haiku"
+
+[[models]]
+name = "gpt-5.3-codex"
+provider = "foundry-openai"
+alias = "codex"
+thinking = "high"
 
 [project_context]
 max_chars = 40000
@@ -293,6 +292,8 @@ fuzzy_threshold = 0.9
 
 [tools.read_file]
 permission = "always"
-allowlist = []
+allowlist = [
+    "/mnt/vast/home/vincent.pfister/*",
+]
 denylist = []
 max_read_bytes = 64000
