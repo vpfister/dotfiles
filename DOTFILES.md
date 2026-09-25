@@ -14,7 +14,8 @@ The `dotfiles` alias wraps git to use this setup:
 alias dotfiles='git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME'
 ```
 
-No symlinks. Files live at their real paths. Only explicitly added files are tracked.
+Most files live at their real paths. Agent configuration uses relative symlinks;
+both a link and its target must be explicitly added to the repo.
 
 ---
 
@@ -216,9 +217,10 @@ Notes / gotchas:
 
 ## Claude Code (`~/.claude/`)
 
-Only hand-written config is tracked; everything the CLI generates is not.
+Hand-written config and selected skills are tracked; runtime state is not.
 
-Tracked: `CLAUDE.md`, `settings.json`, `statusline.sh`, the hook scripts
+Tracked: `CLAUDE.md`, `settings.json`, `sp.md` and its `output-styles/sp.md`
+symlink, `statusline.sh`, the hook scripts
 (`mode-mirror.sh`, `notify-needs-input.sh`), `skills/`, `fleet/*.py` + its `README.md`,
 and per-project skills under `projects/<slug>/skills/`.
 
@@ -229,6 +231,19 @@ state — `sessions/`, `projects/*/memory/`, `file-history/`, `backups/`, `daemo
 
 `settings.json` hooks invoke scripts by path, so a script it references must be tracked or
 every hook event fails on a fresh machine. When adding a hook, commit its script too.
+
+---
+
+## Codex and shared skills
+
+`~/.codex/AGENTS.md` links to `~/.claude/CLAUDE.md`. Codex discovers personal
+skills in `~/.agents/skills/`. Selected skill directories there link to the
+tracked Claude skills; `find-skills` and `herdr` live in `~/.agents/skills/` and
+Claude links to them. Keep each relative symlink and its target tracked.
+
+Codex's live `config.toml`, authentication, hooks, rules, and runtime state are
+currently machine-specific and are not tracked. The installer-generated
+`~/.agents/.skill-lock.json` is also not tracked.
 
 ---
 
