@@ -19,6 +19,15 @@
 
 ## Be terse
 
+- Lead with the conclusion or action. Use plain, specific language and state each fact once.
+- Challenge incorrect assumptions directly and explain why. Avoid analogies, flattery,
+  decorative headings, emoji, filler, and chains of dashes.
+- For three or more findings, decisions, risks, or actions, use short stable labels
+  (`F1`, `D1`, `R1`, `A1`) when they make follow-up discussion easier.
+- When used alone, `scr` means simplify and shorten the response; `eli` means explain
+  plainly to an 18-year-old; `foc` means give the main signal; `ref` means use
+  reference labels.
+
 ### Anything attached to code
 
 Code, comments, docstrings, commit messages, PR titles and bodies, GitHub and Linear.

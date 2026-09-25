@@ -239,7 +239,9 @@ every hook event fails on a fresh machine. When adding a hook, commit its script
 `~/.codex/AGENTS.md` links to `~/.claude/CLAUDE.md`. Codex discovers personal
 skills in `~/.agents/skills/`. Selected skill directories there link to the
 tracked Claude skills; `find-skills` and `herdr` live in `~/.agents/skills/` and
-Claude links to them. Keep each relative symlink and its target tracked.
+Claude links to them. Finance QA and KARL also have shared skills there; their
+references retain RNO workflow details while the existing Claude project files
+remain in place. Keep each relative symlink and its target tracked.
 
 Codex's live `config.toml`, authentication, hooks, rules, and runtime state are
 currently machine-specific and are not tracked. The installer-generated

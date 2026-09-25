@@ -10,7 +10,9 @@ argument-hint: "<source_name> <url1> [url2 ...] [--package <path>]"
 
 You are adding a new source to a PDF scraping framework.
 
-**Arguments:** `$ARGUMENTS` contains all arguments as a single string. Parse them as follows:
+**Arguments:** In Claude Code, `$ARGUMENTS` contains all arguments as a single
+string. In other agents, take the same inputs from the user's request. In this
+skill, `$0` means the source short name. Parse the inputs as follows:
 - **First token** = source short name (lowercase, e.g. `fbf`)
 - **All URLs** (tokens starting with `http://` or `https://`) = starting URLs to explore.
   Multiple URLs are common when a site has separate sitemaps per language
