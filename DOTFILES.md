@@ -220,17 +220,18 @@ Notes / gotchas:
 Hand-written config and selected skills are tracked; runtime state is not.
 
 Tracked: `CLAUDE.md`, `settings.json`, `sp.md` and its `output-styles/sp.md`
-symlink, `statusline.sh`, the hook scripts
-(`mode-mirror.sh`, `notify-needs-input.sh`), `skills/`, `fleet/*.py` + its `README.md`,
-and per-project skills under `projects/<slug>/skills/`.
+symlink, `statusline.sh`, the hook scripts (`mode-mirror.sh`,
+`notify-needs-input.sh`), and portable skills and skill links.
 
 Not tracked: `settings.local.json` (auth env vars), `.credentials.json`, and all runtime
 state — `sessions/`, `projects/*/memory/`, `file-history/`, `backups/`, `daemon*`,
-`plugins/`, `jobs/`, `tasks/`, plus fleet state (`plan.yaml`, `BOARD.md`, `inbox/`,
-`requests/`, `archive/`).
+`plugins/`, `jobs/`, `tasks/`. Fleet code, protocol, and state under `fleet/`,
+and project instructions and references under `projects/`, are local to the
+cluster and not tracked here. On RNO, the fleet code and project references
+link to `~/workspace/mistral_agent_ops/scripts/vpfister/agent_ops/`.
 
-`settings.json` hooks invoke scripts by path, so a script it references must be tracked or
-every hook event fails on a fresh machine. When adding a hook, commit its script too.
+`settings.json` invokes the optional local fleet and Herdr hooks only when
+their scripts exist. Other hook scripts it invokes must be tracked.
 
 ---
 
@@ -238,10 +239,11 @@ every hook event fails on a fresh machine. When adding a hook, commit its script
 
 `~/.codex/AGENTS.md` links to `~/.claude/CLAUDE.md`. Codex discovers personal
 skills in `~/.agents/skills/`. Selected skill directories there link to the
-tracked Claude skills; `find-skills` and `herdr` live in `~/.agents/skills/` and
-Claude links to them. Finance QA and KARL also have shared skills there; their
-references retain RNO workflow details while the existing Claude project files
-remain in place. Keep each relative symlink and its target tracked.
+tracked Claude skills; `find-skills`, `herdr`, Finance QA, and KARL live in
+`~/.agents/skills/` and Claude links to them. Finance QA and KARL have small
+portable entry points; their detailed local references are not tracked here.
+Vibe links to the same instructions and skills. Keep portable relative
+symlinks and their targets tracked.
 
 Codex's live `config.toml`, authentication, hooks, rules, and runtime state are
 currently machine-specific and are not tracked. The installer-generated

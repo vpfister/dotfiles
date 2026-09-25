@@ -67,4 +67,4 @@ When working in a worktree:
 - SSH keys may not work from the cluster — if `git fetch` fails with SSH errors, pull from the main worktree first.
 - Each worktree has its own `.venv`. Always use `uv run --frozen` to avoid dependency resolution delays.
 - Training must be launched from the worktree that has the env code (not from `~/workspace/mistral/` if the env isn't merged to main yet).
-- Skills and memories are shared across worktrees via `~/.claude/projects/-mnt-vast-home-vincent-pfister-workspace-mistral/`.
+- On RNO, local project references and memories are shared across worktrees via `~/.claude/projects/-mnt-vast-home-vincent-pfister-workspace-mistral/`.

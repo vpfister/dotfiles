@@ -42,11 +42,12 @@ Launch (local, opens browser):
 ```
 uv run --with marimo --with rdflib --with python-dotenv --with httpx marimo edit compose_app.py
 ```
-Serve remotely on the cluster with a fixed token (reach it from your laptop):
+Serve remotely on the cluster with a fresh token (reach it from your laptop):
 ```
+export MARIMO_TOKEN="$(openssl rand -hex 16)"
 uv run --with marimo --with rdflib --with python-dotenv --with httpx \
-  marimo edit compose_app.py --host 0.0.0.0 --port 2718 --headless --token-password hgg2026
-# then open  http://<this-host>:2718/?access_token=hgg2026
+  marimo edit compose_app.py --host 0.0.0.0 --port 2718 --headless --token-password "$MARIMO_TOKEN"
+# then open http://<this-host>:2718/?access_token=<value of MARIMO_TOKEN>
 ```
 Read-only app mode (no editor): use `marimo run` instead of `marimo edit`.
 Tips: try **dynamic entities** ("city", "coal power plant", "marathon") at **depth 2-3** for

@@ -132,18 +132,6 @@
       "Bash(*/pytest)",
       "Bash(*/pytest *)",
       "Bash(cd:*)",
-      "mcp__plugin_slack_slack__slack_read_channel",
-      "mcp__plugin_slack_slack__slack_read_thread",
-      "mcp__plugin_slack_slack__slack_read_user_profile",
-      "mcp__plugin_slack_slack__slack_read_canvas",
-      "mcp__plugin_slack_slack__slack_read_file",
-      "mcp__plugin_slack_slack__slack_list_channel_members",
-      "mcp__plugin_slack_slack__slack_get_reactions",
-      "mcp__plugin_slack_slack__slack_search_public",
-      "mcp__plugin_slack_slack__slack_search_public_and_private",
-      "mcp__plugin_slack_slack__slack_search_channels",
-      "mcp__plugin_slack_slack__slack_search_users",
-      "mcp__plugin_slack_slack__slack_search_emojis",
       "Bash(/mnt/vast/home/vincent.pfister/.claude/fleet/fleet-send.py:*)",
       "Bash(python3 /mnt/vast/home/vincent.pfister/.claude/fleet/board.py:*)",
       "Bash(/mnt/vast/home/vincent.pfister/.claude/fleet/board.py:*)",
@@ -195,13 +183,7 @@
       "Bash(gh api * -F:*)",
       "Bash(gh api * --field:*)",
       "Bash(gh api * --raw-field:*)",
-      "Bash(gh api * --input:*)",
-      "mcp__plugin_slack_slack__slack_send_message",
-      "mcp__plugin_slack_slack__slack_send_message_draft",
-      "mcp__plugin_slack_slack__slack_schedule_message",
-      "mcp__plugin_slack_slack__slack_add_reaction",
-      "mcp__plugin_slack_slack__slack_create_canvas",
-      "mcp__plugin_slack_slack__slack_update_canvas"
+      "Bash(gh api * --input:*)"
     ],
     "defaultMode": "auto"
   },
@@ -216,7 +198,7 @@
           },
           {
             "type": "command",
-            "command": "$HOME/.claude/fleet/hook-deliver.py"
+            "command": "[ ! -x \"$HOME/.claude/fleet/hook-deliver.py\" ] || \"$HOME/.claude/fleet/hook-deliver.py\""
           }
         ]
       }
@@ -230,16 +212,6 @@
             "command": "$HOME/.claude/mode-mirror.sh"
           }
         ]
-      },
-      {
-        "matcher": "mcp__plugin_slack_slack__slack_send_message",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "jq -c 'if .tool_input.channel_id == \"C0B667J12FM\" then {hookSpecificOutput:{hookEventName:\"PreToolUse\",permissionDecision:\"allow\",permissionDecisionReason:\"#vp-model-train is pre-approved for unattended status updates\"}} else empty end'",
-            "statusMessage": "Checking Slack channel"
-          }
-        ]
       }
     ],
     "Stop": [
@@ -251,7 +223,7 @@
           },
           {
             "type": "command",
-            "command": "$HOME/.claude/fleet/hook-deliver.py"
+            "command": "[ ! -x \"$HOME/.claude/fleet/hook-deliver.py\" ] || \"$HOME/.claude/fleet/hook-deliver.py\""
           }
         ]
       }
@@ -272,7 +244,17 @@
         "hooks": [
           {
             "type": "command",
-            "command": "$HOME/.claude/fleet/hook-deliver.py"
+            "command": "[ ! -x \"$HOME/.claude/fleet/hook-deliver.py\" ] || \"$HOME/.claude/fleet/hook-deliver.py\""
+          }
+        ]
+      },
+      {
+        "matcher": "^(startup|resume|clear|compact|fork)$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "[ ! -f \"$HOME/.claude/hooks/herdr-agent-state.sh\" ] || bash \"$HOME/.claude/hooks/herdr-agent-state.sh\" session",
+            "timeout": 10
           }
         ]
       }
@@ -288,7 +270,7 @@
   },
   "enabledPlugins": {
     "lua-lsp@claude-plugins-official": true,
-    "slack@claude-plugins-official": true,
+    "slack@claude-plugins-official": false,
     "superpowers@claude-plugins-official": true,
     "pyright-lsp@claude-plugins-official": true,
     "discord@claude-plugins-official": true,

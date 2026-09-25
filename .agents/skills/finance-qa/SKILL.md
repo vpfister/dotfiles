@@ -5,7 +5,9 @@ description: Work on Finance QA RL training, scoring, checkpoint evaluation, and
 
 # Finance QA
 
-Read [the Finance QA reference](references/finance-qa.md) for the relevant
-workflow. It records RNO cluster paths and dated experiment state; check the
-current repository and run configuration before acting. From macOS, access
-cluster paths through the cluster host.
+When available, read [the RNO Finance QA reference](references/finance-qa.md)
+for the relevant workflow. It records dated experiment state, so check the
+current repository and run configuration before acting. Without that local
+reference, inspect `orchestral_package/src/orchestral/envs/finance_qa/` and the
+current sweep or eval configuration in the active worktree. Launch from the
+worktree containing the environment code, using `uv run --frozen`.
