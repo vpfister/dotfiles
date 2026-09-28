@@ -63,6 +63,13 @@ command -v lazygit &>/dev/null && alias lgdots='lazygit --git-dir=$HOME/.dotfile
 alias cc='CLAUDE_CODE_DISABLE_AGENT_VIEW=1 claude'
 alias cca='CLAUDE_CODE_DISABLE_AGENT_VIEW=0 claude agents'
 
+# Keep Codex tool calls in the Herdr pane's environment.
+if [[ "${HERDR_ENV:-}" == 1 ]]; then
+  alias cdx='codex --no-daemon -c shell_environment_policy.inherit=all'
+else
+  alias cdx='codex'
+fi
+
 if [ -f ~/.bash_aliases ]; then
   . ~/.bash_aliases
 fi

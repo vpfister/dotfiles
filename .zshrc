@@ -64,6 +64,13 @@ export ANTHROPIC_DEFAULT_HAIKU_MODEL='claude-haiku-4-5'
 alias cc='CLAUDE_CODE_DISABLE_AGENT_VIEW=1 claude'
 alias cca='CLAUDE_CODE_DISABLE_AGENT_VIEW=0 claude agents'
 
+# Keep Codex tool calls in the Herdr pane's environment.
+if [[ "${HERDR_ENV:-}" == 1 ]]; then
+  alias cdx='codex --no-daemon -c shell_environment_policy.inherit=all'
+else
+  alias cdx='codex'
+fi
+
 # --- Dotfiles bare repo management ---
 alias dotfiles='git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME'
 command -v lazygit &>/dev/null && alias lgdots='lazygit --git-dir=$HOME/.dotfiles/ --work-tree=$HOME'
