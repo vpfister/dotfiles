@@ -13,8 +13,9 @@ split_horizontal = "prefix+minus"
 # Shared on purpose: herdr has no per-machine config layering, so this accent is
 # the same everywhere. Per-cluster colours live in ~/.config/host-style.sh (tmux).
 accent = "#b4befe"
-pane_outer_borders = false
-pane_gaps = false
+pane_outer_borders = true
+pane_gaps = true
+show_agent_labels_on_pane_borders = true
 prompt_new_tab_name = false
 tab_bar_right = [
   { type = "zoom" },
@@ -97,3 +98,34 @@ key = "prefix+O"
 type = "plugin_action"
 command = "ntindle.herdr-resurrect.open-space"
 description = "resurrect: open saved space…"
+
+[[keys.command]]
+key = "prefix+T"
+type = "plugin_action"
+command = "herdr-synapse.team-up"
+description = "teams"
+
+[[keys.command]]
+key = "prefix+u"
+type = "plugin_action"
+command = "herdr-synapse.console"
+description = "team console"
+
+[[keys.command]]
+key = "prefix+y"
+type = "plugin_action"
+command = "herdr-synapse.toggle-view"
+description = "team view"
+
+[[keys.command]]
+key = "prefix+D"
+type = "plugin_action"
+command = "herdr-synapse.mission"
+description = "mission control"
+
+[ui.sidebar.agents]
+rows = [
+  ["state_icon", "agent"],
+  [{ token = "$team_role", fg = "#f9e2af" }, { token = "$team_task", fg = "#89b4fa" }, { token = "$team_context", fg = "#a6adc8" }],
+  ["workspace", "tab"],
+]
