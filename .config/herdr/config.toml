@@ -100,7 +100,7 @@ command = "ntindle.herdr-resurrect.open-space"
 description = "resurrect: open saved space…"
 
 [[keys.command]]
-key = "prefix+T"
+key = "prefix+f"
 type = "plugin_action"
 command = "herdr-synapse.team-up"
 description = "teams"
@@ -118,7 +118,7 @@ command = "herdr-synapse.toggle-view"
 description = "team view"
 
 [[keys.command]]
-key = "prefix+D"
+key = "prefix+F"
 type = "plugin_action"
 command = "herdr-synapse.mission"
 description = "mission control"
