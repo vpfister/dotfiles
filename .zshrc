@@ -55,8 +55,8 @@ else
   export ANTHROPIC_FOUNDRY_BASE_URL='http://codex-foundry-proxy.tenant-slurm/anthropic'
 fi
 export ANTHROPIC_FOUNDRY_API_KEY='dont-worry-this-key-will-be-auto-injected'
-export ANTHROPIC_MODEL='claude-opus-5'
-export ANTHROPIC_DEFAULT_OPUS_MODEL='claude-opus-4-6'
+export ANTHROPIC_MODEL='claude-opus-5-5'
+export ANTHROPIC_DEFAULT_OPUS_MODEL='claude-opus-5-5'
 export ANTHROPIC_DEFAULT_SONNET_MODEL='claude-sonnet-4-6'
 export ANTHROPIC_DEFAULT_HAIKU_MODEL='claude-haiku-4-5'
 

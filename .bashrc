@@ -100,7 +100,8 @@ if [[ -f /mnt/vast/shared/config/.bashrc ]]; then
   export ANTHROPIC_FOUNDRY_API_KEY='dont-worry-this-key-will-be-auto-injected'
   export ANTHROPIC_FOUNDRY_BASE_URL=http://codex-foundry-proxy.tenant-slurm/anthropic
   #export ANTHROPIC_MODEL='claude-opus-4-8'
-  export ANTHROPIC_MODEL='claude-opus-5'
+  export ANTHROPIC_MODEL='claude-opus-5-5'
+  export ANTHROPIC_DEFAULT_OPUS_MODEL='claude-opus-5-5'
   export ANTHROPIC_SMALL_FAST_MODEL='claude-haiku-4-5@20251001'
 
   # codex
@@ -144,7 +145,7 @@ if [[ "$(uname)" == "Darwin" ]]; then
   export CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1
   export ANTHROPIC_FOUNDRY_BASE_URL='https://foundry-proxy.cheetah-koi.ts.net/anthropic'
   export ANTHROPIC_FOUNDRY_API_KEY='dont-worry-this-key-will-be-auto-injected'
-  export ANTHROPIC_DEFAULT_OPUS_MODEL='claude-opus-4-8'
+  export ANTHROPIC_DEFAULT_OPUS_MODEL='claude-opus-5-5'
   export ANTHROPIC_DEFAULT_SONNET_MODEL='claude-sonnet-4-6'
   export ANTHROPIC_DEFAULT_HAIKU_MODEL='claude-haiku-4-5'
 else
