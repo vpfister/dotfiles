@@ -274,11 +274,13 @@
     "superpowers@claude-plugins-official": true,
     "pyright-lsp@claude-plugins-official": true,
     "discord@claude-plugins-official": true,
-    "grafana-mcp@claude-plugins-official": false
+    "grafana-mcp@claude-plugins-official": false,
+    "rust-analyzer-lsp@claude-plugins-official": true
   },
   "outputStyle": "sp",
   "autoUpdatesChannel": "latest",
   "skipWorkflowUsageWarning": true,
+  "editorMode": "vim",
   "skipAutoPermissionPrompt": true,
   "autoMode": {
     "allow": [
