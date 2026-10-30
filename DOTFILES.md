@@ -251,6 +251,76 @@ currently machine-specific and are not tracked. The installer-generated
 
 ---
 
+## Agent GitHub access on Linux
+
+Tracked files: `.local/bin/with-agent-github`,
+`.config/git/agent-github.gitconfig`, and the `cc`/`cdx` aliases in `.bashrc`
+and `.zshrc`. On Linux, those aliases give only the agent process a Git config
+that rewrites the canonical SSH URLs for `mistralai/mistral`, `vortex`, and
+`registry` to HTTPS and uses the local `gh` OAuth login. Ordinary terminal Git
+commands keep using SSH; stored remotes are unchanged. On macOS the aliases keep
+their previous behavior, and the wrapper itself is a pass-through.
+
+The helper uses `$HOME` and finds `gh` through `PATH`; it has no cluster-specific
+paths. It preserves existing `GIT_CONFIG_*` settings and clears `GH_TOKEN` and
+`GITHUB_TOKEN` only in its child process so an inherited token cannot override
+the chosen local login. Linux `cdx` disables the daemon and preserves the Git
+variables, including names containing `KEY`.
+
+### Bootstrap each independent cluster home
+
+1. Install `git`, `gh`, and the agent CLI on `PATH`. Codex must support the flags
+   used by `cdx`. Check out these dotfiles, then open a new shell. Existing shells
+   and running agents retain their previous aliases/environment.
+2. If that home has no working GitHub CLI login, run:
+
+   ```bash
+   env -u GH_TOKEN -u GITHUB_TOKEN gh auth login --hostname github.com --web --git-protocol ssh --skip-ssh-key
+   ```
+
+   Complete browser/organization SSO authorization once. An existing working
+   OAuth login can be reused. Nodes sharing a home/config store share that login;
+   independent cluster homes need separate provisioning. Classic PATs are
+   forbidden by Mistral policy.
+3. Keep authentication local and untracked. `gh auth status` reports the store
+   location; normally it is `~/.config/gh/hosts.yml` on a headless Linux host.
+   Protect the directory with mode 0700 and credential file with 0600. Respect
+   `GH_CONFIG_DIR` or `XDG_CONFIG_HOME` if customized. Never put credentials in
+   dotfiles, remote URLs, or shell startup exports. Check the lifetime/refresh
+   behavior of each newly issued credential rather than assuming it matches
+   another cluster's token.
+4. Verify cluster-managed GitHub/API egress and any organization IP policy. A
+   valid token cannot replace a network route that depends on the laptop.
+   Confirm the organization's requirements for long-term headless credentials.
+
+After provisioning, these read-only checks should succeed without SSH forwarding:
+
+```bash
+with-agent-github gh api user --jq .login
+env -u SSH_AUTH_SOCK GIT_SSH_COMMAND=false with-agent-github git -C "$HOME/workspace/mistral" ls-remote origin HEAD
+env -u SSH_AUTH_SOCK GIT_SSH_COMMAND=false with-agent-github git -C "$HOME/workspace/vortex" ls-remote origin HEAD
+```
+
+The account should be `vpfister`. Compare `git remote get-url origin` with
+`with-agent-github git remote get-url origin`: ordinary Git should report SSH,
+the wrapper HTTPS. `git config --local --get remote.origin.url` should still
+report the stored SSH URL.
+
+Non-interactive jobs opt in with `~/.local/bin/with-agent-github COMMAND ...`;
+they do not rely on interactive aliases. Slurm/container launchers must preserve
+`GIT_CONFIG_*`, provide the intended home/config store, and expose `gh` on PATH.
+Add repository-specific config entries only when a job needs another private
+dependency. GitHub PR/API commands use OAuth in both human and agent sessions;
+SSH authenticates Git transport only.
+
+Revocation or loss of SSO access requires human reauthorization. For rotation,
+validate a replacement, update all runtime consumers and backups, then revoke
+the old token individually. `gh auth logout` only removes local configuration;
+revoking the whole GitHub CLI app grant affects other devices too. Bitwarden
+can hold a management/backup copy but is not a runtime unlock dependency.
+
+---
+
 ## What is NOT tracked
 
 The following are intentionally excluded and must be managed per machine:
@@ -258,6 +328,7 @@ The following are intentionally excluded and must be managed per machine:
 - `~/.ssh/` — SSH keys and config
 - `~/.gnupg/` — GPG keys
 - `~/.netrc` — credentials
+- `~/.config/gh/` — GitHub CLI login and machine-local configuration
 - VPN configuration
 - Any file containing tokens, secrets, or API keys
 - `~/.config/tmux/plugins/` — installed by TPM on each machine

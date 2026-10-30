@@ -62,9 +62,14 @@ command -v lazygit &>/dev/null && alias lgdots='lazygit --git-dir=$HOME/.dotfile
 # Claude Code (cc shadows /usr/bin/cc interactively; build tools are unaffected)
 alias cc='CLAUDE_CODE_DISABLE_AGENT_VIEW=1 claude'
 alias cca='CLAUDE_CODE_DISABLE_AGENT_VIEW=0 claude agents'
+if [[ "$(uname)" == "Linux" ]]; then
+  alias cc='CLAUDE_CODE_DISABLE_AGENT_VIEW=1 "$HOME/.local/bin/with-agent-github" claude'
+fi
 
-# Keep Codex tool calls in the Herdr pane's environment.
-if [[ "${HERDR_ENV:-}" == 1 ]]; then
+# Linux agents inherit their Git config; Mac keeps its existing SSH setup.
+if [[ "$(uname)" == "Linux" ]]; then
+  alias cdx='"$HOME/.local/bin/with-agent-github" codex --no-daemon -c shell_environment_policy.inherit=all -c shell_environment_policy.ignore_default_excludes=true'
+elif [[ "${HERDR_ENV:-}" == 1 ]]; then
   alias cdx='codex --no-daemon -c shell_environment_policy.inherit=all'
 else
   alias cdx='codex'
