@@ -16,17 +16,21 @@ WRITE_FLAG = re.compile(r"(?:^|\s)(?:-X|--method|-f|-F|--field|--raw-field|--inp
 READ_METHOD = re.compile(r"(?:-X|--method)[\s=]*['\"]?GET\b", re.I)
 MERGE = re.compile(r"/merge\b|mergePullRequest|PullRequestAutoMerge|enqueuePullRequest|merge-queue", re.I)
 
+ASSIGNMENT = re.compile(r"(?:^|[\s;&|(])([A-Za-z_]\w*)=('[^']*'|\"[^\"]*\"|[^\s;&|)]+)")
+# A numeric id, or a positional parameter in a helper like `reply() { gh api "$R/$1/replies" ...; }`.
+# A positional value can't smuggle in a merge: MERGE is checked on the whole command text.
+ID = r"(?:\d+|\$\d|\$\{\d\})"
 ALLOWED_REST = [
-    r"pulls/\d+/comments/\d+/replies",
-    r"pulls/comments/\d+(?:/reactions)?\b",
-    r"issues/\d+/comments\b",
-    r"issues/comments/\d+(?:/reactions)?\b",
-    r"issues/\d+/labels\b",
-    r"pulls/\d+(?=['\"\s]|$)",
-    r"actions/runs/\d+/(?:rerun|rerun-failed-jobs)\b",
-    r"actions/jobs/\d+/rerun\b",
-    r"check-runs/\d+/rerequest\b",
-    r"check-suites/\d+/rerequest\b",
+    rf"pulls/{ID}/comments/{ID}/replies",
+    rf"pulls/comments/{ID}(?:/reactions)?\b",
+    rf"issues/{ID}/comments\b",
+    rf"issues/comments/{ID}(?:/reactions)?\b",
+    rf"issues/{ID}/labels\b",
+    rf"pulls/{ID}(?=['\"\s]|$)",
+    rf"actions/runs/{ID}/(?:rerun|rerun-failed-jobs)\b",
+    rf"actions/jobs/{ID}/rerun\b",
+    rf"check-runs/{ID}/rerequest\b",
+    rf"check-suites/{ID}/rerequest\b",
 ]
 ALLOWED_MUTATIONS = {
     "resolveReviewThread",
@@ -59,11 +63,19 @@ def needs_prompt(segment: str) -> bool:
     return not any(re.search(p, segment) for p in ALLOWED_REST)
 
 
+def expand_assignments(command: str) -> str:
+    """Substitute `NAME=value` assignments made earlier in the same command."""
+    for name, value in ASSIGNMENT.findall(command):
+        value = value.strip("'\"")
+        command = re.sub(rf"\$(?:{name}\b|\{{{name}\}})", lambda _: value, command)
+    return command
+
+
 def main() -> None:
     data = json.load(sys.stdin)
-    command = data.get("tool_input", {}).get("command", "")
+    command = expand_assignments(data.get("tool_input", {}).get("command", ""))
     segments = ["gh api" + s for s in command.split("gh api")[1:]]
-    if any(needs_prompt(s) for s in segments):
+    if MERGE.search(command) or any(needs_prompt(s) for s in segments):
         json.dump(
             {
                 "hookSpecificOutput": {
