@@ -137,28 +137,71 @@
       "Bash(/mnt/vast/home/vincent.pfister/.claude/fleet/board.py:*)",
       "Bash(/mnt/vast/home/vincent.pfister/.claude/fleet/fleet-request.py:*)",
       "Edit(//mnt/vast/home/vincent.pfister/fleet-reviews/**)",
-      "Bash(/mnt/vast/home/vincent.pfister/.claude/fleet/fleet-infra-check.py:*)"
-    ],
-    "deny": [
-      "Bash(find * -delete:*)",
-      "Bash(find * -exec:*)",
-      "Bash(find * -execdir:*)",
-      "Bash(find * -ok:*)",
-      "Bash(find * -okdir:*)",
-      "Bash(find * -fprint:*)",
-      "Bash(find * -fls:*)",
-      "Bash(sed -i:*)",
-      "Bash(sed * -i:*)"
-    ],
-    "ask": [
+      "Bash(/mnt/vast/home/vincent.pfister/.claude/fleet/fleet-infra-check.py:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
       "Bash(git push:*)",
+      "Bash(git pull:*)",
+      "Bash(git rebase:*)",
       "Bash(gh pr create:*)",
-      "Bash(gh pr merge:*)",
       "Bash(gh pr edit:*)",
       "Bash(gh pr comment:*)",
-      "Bash(gh pr close:*)",
       "Bash(gh pr ready:*)",
       "Bash(gh pr review:*)",
+      "Bash(gh run rerun:*)",
+      "Bash(gh stack:*)",
+      "mcp__buildkite__retry_failed_jobs",
+      "mcp__buildkite__retry_job",
+      "mcp__buildkite__rebuild_build"
+    ],
+    "deny": [
+      "Bash(find * -delete*)",
+      "Bash(find * -exec*)",
+      "Bash(find * -execdir*)",
+      "Bash(find * -ok*)",
+      "Bash(find * -okdir*)",
+      "Bash(find * -fprint*)",
+      "Bash(find * -fls*)",
+      "Bash(sed -i:*)",
+      "Bash(sed * -i*)"
+    ],
+    "ask": [
+      "Bash(git push * main)",
+      "Bash(git push * main *)",
+      "Bash(git push *:main)",
+      "Bash(git push *:main *)",
+      "Bash(git push *refs/heads/main*)",
+      "Bash(git push * master)",
+      "Bash(git push * master *)",
+      "Bash(git push *:master)",
+      "Bash(git push *:master *)",
+      "Bash(git push *refs/heads/master*)",
+      "Bash(git push --force)",
+      "Bash(git push --force *)",
+      "Bash(git push * --force)",
+      "Bash(git push * --force *)",
+      "Bash(git push -f)",
+      "Bash(git push -f *)",
+      "Bash(git push * -f)",
+      "Bash(git push * -f *)",
+      "Bash(git push *--delete*)",
+      "Bash(git push * -d *)",
+      "Bash(git push *--mirror*)",
+      "Bash(git push *--all*)",
+      "Bash(gh pr merge:*)",
+      "Bash(gh stack merge:*)",
+      "Bash(gh pr review *--approve*)",
+      "Bash(gh pr review * -a)",
+      "Bash(gh pr review * -a *)",
+      "Bash(gh pr review -a*)",
+      "Bash(gh api */merge)",
+      "Bash(gh api */merge *)",
+      "Bash(gh api */merge'*)",
+      "Bash(gh api */merge\"*)",
+      "Bash(gh api *mergePullRequest*)",
+      "Bash(gh api *PullRequestAutoMerge*)",
+      "Bash(gh api *enqueuePullRequest*)",
+      "Bash(gh pr close:*)",
       "Bash(gh issue create:*)",
       "Bash(gh issue comment:*)",
       "Bash(gh issue edit:*)",
@@ -169,21 +212,7 @@
       "Bash(gh repo create:*)",
       "Bash(gh repo delete:*)",
       "Bash(gh secret set:*)",
-      "Bash(gh workflow run:*)",
-      "Bash(gh api --method:*)",
-      "Bash(gh api -X:*)",
-      "Bash(gh api -f:*)",
-      "Bash(gh api -F:*)",
-      "Bash(gh api --field:*)",
-      "Bash(gh api --raw-field:*)",
-      "Bash(gh api --input:*)",
-      "Bash(gh api * --method:*)",
-      "Bash(gh api * -X:*)",
-      "Bash(gh api * -f:*)",
-      "Bash(gh api * -F:*)",
-      "Bash(gh api * --field:*)",
-      "Bash(gh api * --raw-field:*)",
-      "Bash(gh api * --input:*)"
+      "Bash(gh workflow run:*)"
     ],
     "defaultMode": "auto"
   },
@@ -210,6 +239,23 @@
           {
             "type": "command",
             "command": "$HOME/.claude/mode-mirror.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "if": "Bash(*gh api*)",
+            "command": "$HOME/.claude/hooks/gh-api-write-guard.py",
+            "onFailure": "block"
+          },
+          {
+            "type": "command",
+            "if": "Bash(*git *push*)",
+            "command": "$HOME/.claude/hooks/git-push-branch-guard.py",
+            "onFailure": "block"
           }
         ]
       }
@@ -287,7 +333,12 @@
       "$defaults",
       "Read-only filesystem inspection is allowed anywhere on the filesystem, including outside the working directory. This covers ls, tree, find, cat, head, tail, nl, wc, sort, uniq, cut, stat, file, du, df, rg, grep, jq, sed -n, and read-only git subcommands (status, log, diff, show, blame, ls-files, rev-parse, branch --list, ...).",
       "Compound read-only pipelines are allowed even when they assign a literal path to a shell variable first, and even when that path uses ~ or $HOME expansion. Example: K=~/workspace/proj/src; ls $K/*.py; grep -ln 'foo' $K/*.py. A tilde or variable in an assignment is not by itself a reason to prompt when every command in the pipeline is read-only.",
-      "This does not extend to a variable whose value comes from command substitution that fetches over the network or mutates state (e.g. K=$(curl ...)), nor to any pipeline segment that writes, deletes, or redirects output to a file."
+      "This does not extend to a variable whose value comes from command substitution that fetches over the network or mutates state (e.g. K=$(curl ...)), nor to any pipeline segment that writes, deletes, or redirects output to a file.",
+      "Standing authorization for assigned branch/PR work: staging, committing, and pushing task-related changes to the assigned feature branch (or branches of an assigned PR stack); fetching, pulling, rebasing, resolving conflicts, and force-pushing with --force-with-lease to those branches; creating and editing PRs (title, body, labels), marking them ready, replying to and resolving review threads, and rerunning CI. This does not cover pushing to the default or a protected branch, touching unrelated branches, or merging."
+    ],
+    "soft_deny": [
+      "$defaults",
+      "PR Merge: merging a PR, enabling auto-merge, or enqueuing a merge by any route (gh pr merge, gh stack merge, gh api REST or GraphQL, wrappers). These require a separate explicit user request and human confirmation through the permission prompt."
     ]
   },
   "attribution": {

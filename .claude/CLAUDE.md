@@ -17,6 +17,21 @@
 - Do not claim completion without evidence.
 - For completed work, concisely restate it but do not overload with response detail.
 
+## Branch and PR work
+
+Standing authorization for assigned implementation/branch/PR work, with or without `pr-coach`:
+
+- Stage, commit, and push task-related changes to the assigned branch.
+- Create and edit PRs (title, body, labels), answer comments and review threads, resolve
+  addressed bot threads, and mark PRs ready.
+- Fetch, pull, rebase, resolve conflicts, and force-push with `--force-with-lease`,
+  including the necessary updates within an assigned PR stack.
+- Rerun CI and make scoped fixes. Preserve unrelated work and other contributors' changes.
+- Excluded: direct pushes to default or protected branches, and changes to unrelated branches.
+- Never merge PRs, enable auto-merge, or enqueue merges autonomously. Merge only after a
+  separate explicit request and human confirmation through the permission prompt. Do not
+  use APIs or wrappers to get around that confirmation.
+
 ## Be terse
 
 - Lead with the conclusion or action. Use plain, specific language and state each fact once.
