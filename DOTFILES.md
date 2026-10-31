@@ -253,7 +253,7 @@ currently machine-specific and are not tracked. The installer-generated
 
 ## Agent GitHub access on Linux
 
-Tracked files: `.local/bin/with-agent-github`,
+Tracked files: `.local/bin/with-agent-github`, `.local/bin/agent-github-status`,
 `.config/git/agent-github.gitconfig`, and the `cc`/`cdx` aliases in `.bashrc`
 and `.zshrc`. On Linux, those aliases give only the agent process a Git config
 that rewrites the canonical SSH URLs for `mistralai/mistral`, `vortex`, and
@@ -305,6 +305,21 @@ The account should be `vpfister`. Compare `git remote get-url origin` with
 `with-agent-github git remote get-url origin`: ordinary Git should report SSH,
 the wrapper HTTPS. `git config --local --get remote.origin.url` should still
 report the stored SSH URL.
+
+### Check existing sessions
+
+Run `agent-github-status` in the agent's own tool shell. `AUTOMATIC` means the
+configuration is active there; `EXPLICIT` means to prefix Git/gh commands with
+`~/.local/bin/with-agent-github`. `agent-github-status --check` separately tests
+the explicit wrapper's Git/API access with SSH disabled. It does not activate
+the caller's environment. Python 3.9+ is required for the status tool.
+
+`agent-github-status --sessions` lists wrapper inheritance for agents on the local
+Linux Herdr server, using process launch metadata. That is an inventory, not proof
+of a later tool shell's configuration or current authentication. It prints no
+credentials. Old agents can keep working through the explicit wrapper: reloading
+a parent shell, or exporting variables in one tool call, does not update every
+future tool call. Restart through an updated `cc`/`cdx` alias for automatic use.
 
 Non-interactive jobs opt in with `~/.local/bin/with-agent-github COMMAND ...`;
 they do not rely on interactive aliases. Slurm/container launchers must preserve
