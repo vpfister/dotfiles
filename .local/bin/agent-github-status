@@ -83,18 +83,20 @@ def sessions():
     def inspect(agent):
         try:
             result = run(["herdr", "pane", "process-info", "--pane", agent["pane_id"]])
-            processes = json.loads(result.stdout)["result"]["process_info"]["foreground_processes"]
-            states = []
-            for process in processes:
-                # /proc records the environment at exec, not later tool-shell changes.
-                data = (Path("/proc") / str(process["pid"]) / "environ").read_bytes()
-                env = {}
-                for entry in data.split(b"\0"):
-                    key, sep, value = entry.partition(b"=")
-                    if sep and key.startswith(b"GIT_CONFIG_"):
-                        env[key.decode()] = value.decode(errors="replace")
-                states.append(inherited_profile(env))
-            state = "INHERITED" if any(states) else "NOT INHERITED" if states else "UNKNOWN"
+            info = json.loads(result.stdout)["result"]["process_info"]
+            # A wrapped tool subprocess does not make its parent agent automatic.
+            leaders = [p for p in info["foreground_processes"]
+                       if p["pid"] == info["foreground_process_group_id"] and p["name"] == agent["agent"]]
+            if len(leaders) != 1:
+                return agent["pane_id"], agent.get("name") or agent["agent"], "UNKNOWN"
+            # /proc records the environment at exec, not later tool-shell changes.
+            data = (Path("/proc") / str(leaders[0]["pid"]) / "environ").read_bytes()
+            env = {}
+            for entry in data.split(b"\0"):
+                key, sep, value = entry.partition(b"=")
+                if sep and key.startswith(b"GIT_CONFIG_"):
+                    env[key.decode()] = value.decode(errors="replace")
+            state = "INHERITED" if inherited_profile(env) else "NOT INHERITED"
         except (OSError, ValueError, KeyError, subprocess.TimeoutExpired):
             state = "UNKNOWN"
         return agent["pane_id"], agent.get("name") or agent["agent"], state
