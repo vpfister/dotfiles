@@ -226,7 +226,7 @@
     ],
     "defaultMode": "auto"
   },
-  "model": "claude-opus-5-5",
+  "model": "vertex_ai/claude-opus-5-5",
   "hooks": {
     "UserPromptSubmit": [
       {
@@ -354,5 +354,34 @@
   "attribution": {
     "commit": "",
     "pr": ""
+  },
+  "modelPicker": {
+    "options": [
+      {
+        "model": "vertex_ai/claude-opus-5-5",
+        "label": "Claude Opus 5.5",
+        "description": "Claude Opus 5.5 via the internal gateway"
+      },
+      {
+        "model": "azure_ai/gpt-6-astra",
+        "label": "GPT-6 Astra",
+        "description": "GPT-6 Astra via the internal gateway"
+      },
+      {
+        "model": "azure_ai/gpt-6.1-sol",
+        "label": "GPT-6.1 Sol",
+        "description": "GPT-6.1 Sol via the internal gateway"
+      },
+      {
+        "model": "mistral/mistral-large-4",
+        "label": "Mistral Large 4",
+        "description": "Mistral Large 4 via the internal gateway"
+      },
+      {
+        "model": "mistral/zai-glm-5-3",
+        "label": "GLM-5.3",
+        "description": "GLM-5.3 via the internal gateway"
+      }
+    ]
   }
 }
