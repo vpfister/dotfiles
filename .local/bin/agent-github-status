@@ -1,0 +1,136 @@
+#!/usr/bin/env python3
+"""Inspect Git routing without printing credentials or changing session state."""
+
+import argparse
+import concurrent.futures
+import json
+import os
+from pathlib import Path
+import subprocess
+import sys
+
+
+PROFILE = Path.home() / ".config/git/agent-github.gitconfig"
+WRAPPER = Path.home() / ".local/bin/with-agent-github"
+REPOS = ("mistral", "vortex", "registry")
+
+
+def run(command, **kwargs):
+    return subprocess.run(command, capture_output=True, text=True, timeout=20, **kwargs)
+
+
+def inherited_profile(env):
+    count = env.get("GIT_CONFIG_COUNT", "0")
+    if not count.isdecimal():
+        return False
+    for key, value in env.items():
+        if not key.startswith("GIT_CONFIG_KEY_") or value != "include.path":
+            continue
+        index = key.removeprefix("GIT_CONFIG_KEY_")
+        if index.isdecimal() and int(index) < int(count):
+            if env.get("GIT_CONFIG_VALUE_" + index) == str(PROFILE):
+                return True
+    return False
+
+
+def shell_status():
+    active = inherited_profile(os.environ)
+    for repo in REPOS:
+        result = run(["git", "ls-remote", "--get-url", f"git@github.com:mistralai/{repo}.git"])
+        active &= result.returncode == 0 and result.stdout.strip() == f"https://github.com/mistralai/{repo}.git"
+    active &= not (os.environ.get("GH_TOKEN") or os.environ.get("GITHUB_TOKEN"))
+    if active:
+        print("Current shell: AUTOMATIC (agent Git config is active)")
+    elif WRAPPER.is_file():
+        print("Current shell: EXPLICIT (prefix commands with ~/.local/bin/with-agent-github)")
+    else:
+        print("Current shell: UNAVAILABLE (install the wrapper from dotfiles)")
+
+
+def check_access():
+    env = os.environ.copy()
+    env.pop("SSH_AUTH_SOCK", None)
+    env["GIT_SSH_COMMAND"] = "false"
+    checks = [("GitHub API", ["gh", "api", "user", "--jq", ".login"])]
+    checks += [(repo, ["git", "ls-remote", "--exit-code", f"git@github.com:mistralai/{repo}.git", "HEAD"]) for repo in REPOS]
+
+    def check(item):
+        name, command = item
+        try:
+            result = run([str(WRAPPER), *command], env=env)
+            ok = result.returncode == 0 and bool(result.stdout.strip())
+            if name == "GitHub API":
+                ok &= result.stdout.strip() == "vpfister"
+        except (OSError, subprocess.TimeoutExpired):
+            ok = False
+        return name, ok
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=4) as pool:
+        results = list(pool.map(check, checks))
+    for name, ok in results:
+        print(f"Explicit wrapper check, SSH disabled: {name}: {'OK' if ok else 'FAIL'}")
+    return 0 if all(ok for _, ok in results) else 1
+
+
+def sessions():
+    if os.environ.get("HERDR_ENV") != "1" or not Path("/proc").is_dir():
+        raise RuntimeError("--sessions requires a local Linux Herdr session")
+    result = run(["herdr", "agent", "list"])
+    if result.returncode:
+        raise RuntimeError("cannot read the local Herdr agent list")
+    agents = json.loads(result.stdout)["result"]["agents"]
+
+    def inspect(agent):
+        try:
+            result = run(["herdr", "pane", "process-info", "--pane", agent["pane_id"]])
+            info = json.loads(result.stdout)["result"]["process_info"]
+            # A wrapped tool subprocess does not make its parent agent automatic.
+            leaders = [p for p in info["foreground_processes"]
+                       if p["pid"] == info["foreground_process_group_id"] and p["name"] == agent["agent"]]
+            if len(leaders) != 1:
+                return agent["pane_id"], agent.get("name") or agent["agent"], "UNKNOWN"
+            # /proc records the environment at exec, not later tool-shell changes.
+            data = (Path("/proc") / str(leaders[0]["pid"]) / "environ").read_bytes()
+            env = {}
+            for entry in data.split(b"\0"):
+                key, sep, value = entry.partition(b"=")
+                if sep and key.startswith(b"GIT_CONFIG_"):
+                    env[key.decode()] = value.decode(errors="replace")
+            state = "INHERITED" if inherited_profile(env) else "NOT INHERITED"
+        except (OSError, ValueError, KeyError, subprocess.TimeoutExpired):
+            state = "UNKNOWN"
+        return agent["pane_id"], agent.get("name") or agent["agent"], state
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=6) as pool:
+        rows = list(pool.map(inspect, agents))
+    print(f"{'PANE':<10} {'AGENT':<25} WRAPPER AT LAUNCH")
+    for pane, name, state in rows:
+        print(f"{pane:<10} {name:<25} {state}")
+    print("Launch metadata only. Check actual routing with agent-github-status in the agent's tool shell.")
+    print("NOT INHERITED sessions can still use with-agent-github explicitly; this is not an auth failure.")
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument("--sessions", action="store_true", help="list wrapper inheritance for local Herdr agents")
+    group.add_argument("--check", action="store_true", help="also test the explicit wrapper's Git/API access without SSH")
+    args = parser.parse_args()
+    if sys.platform != "linux":
+        print("Current shell: NATIVE (the agent GitHub wrapper applies only on Linux)")
+        return 0
+    try:
+        if args.sessions:
+            sessions()
+        else:
+            shell_status()
+            if args.check:
+                return check_access()
+    except (OSError, ValueError, KeyError, RuntimeError, subprocess.TimeoutExpired):
+        print("Status unavailable: check required tools, local Herdr access, and ~/DOTFILES.md.", file=sys.stderr)
+        return 1
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

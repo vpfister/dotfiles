@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if (( $# == 0 )); then
+  printf 'Usage: with-agent-github COMMAND [ARG ...]\n' >&2
+  exit 2
+fi
+
+if [[ "$(uname -s)" != Linux ]]; then
+  exec "$@"
+fi
+
+agent_git_config="$HOME/.config/git/agent-github.gitconfig"
+if [[ ! -r "$agent_git_config" ]]; then
+  printf 'with-agent-github: missing %s; check out the agent Git config from dotfiles.\n' "$agent_git_config" >&2
+  exit 1
+fi
+if ! command -v gh >/dev/null 2>&1; then
+  printf 'with-agent-github: install GitHub CLI and put gh on PATH.\n' >&2
+  exit 1
+fi
+
+agent_git_count="${GIT_CONFIG_COUNT:-0}"
+if [[ ! "$agent_git_count" =~ ^[0-9]+$ ]]; then
+  printf 'with-agent-github: GIT_CONFIG_COUNT must be a non-negative integer.\n' >&2
+  exit 2
+fi
+agent_git_count=$((10#$agent_git_count))
+
+# Append so caller-supplied Git settings survive in nested jobs.
+printf -v "GIT_CONFIG_KEY_$agent_git_count" '%s' include.path
+printf -v "GIT_CONFIG_VALUE_$agent_git_count" '%s' "$agent_git_config"
+export "GIT_CONFIG_KEY_$agent_git_count" "GIT_CONFIG_VALUE_$agent_git_count"
+export GIT_CONFIG_COUNT=$((agent_git_count + 1))
+
+# Use this home/config store, never a token inherited from a different job.
+unset GH_TOKEN GITHUB_TOKEN
+export GH_CONFIG_DIR="${GH_CONFIG_DIR:-${XDG_CONFIG_HOME:-$HOME/.config}/gh}"
+export GIT_TERMINAL_PROMPT=0
+export GH_PROMPT_DISABLED=1
+
+exec "$@"

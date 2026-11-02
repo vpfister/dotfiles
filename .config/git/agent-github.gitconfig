@@ -1,0 +1,27 @@
+# Included only by with-agent-github. Keep canonical .git URLs to limit prefix matching.
+[url "https://github.com/mistralai/mistral.git"]
+    insteadOf = git@github.com:mistralai/mistral.git
+    insteadOf = ssh://git@github.com/mistralai/mistral.git
+[credential "https://github.com/mistralai/mistral.git"]
+    helper =
+    helper = !gh auth git-credential
+    useHttpPath = true
+    username = vpfister
+
+[url "https://github.com/mistralai/vortex.git"]
+    insteadOf = git@github.com:mistralai/vortex.git
+    insteadOf = ssh://git@github.com/mistralai/vortex.git
+[credential "https://github.com/mistralai/vortex.git"]
+    helper =
+    helper = !gh auth git-credential
+    useHttpPath = true
+    username = vpfister
+
+[url "https://github.com/mistralai/registry.git"]
+    insteadOf = git@github.com:mistralai/registry.git
+    insteadOf = ssh://git@github.com/mistralai/registry.git
+[credential "https://github.com/mistralai/registry.git"]
+    helper =
+    helper = !gh auth git-credential
+    useHttpPath = true
+    username = vpfister
