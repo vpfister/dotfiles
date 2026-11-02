@@ -1,4 +1,4 @@
-active_model = "codex"
+active_model = "gpt-6.1-sol"
 vim_keybindings = false
 disable_welcome_banner_animation = false
 autocopy_to_clipboard = true
@@ -44,24 +44,11 @@ project_id = ""
 region = ""
 
 [[providers]]
-name = "foundry-anthropic"
-api_base = "http://codex-foundry-proxy.tenant-slurm/anthropic"
-api_key_env_var = "ANTHROPIC_FOUNDRY_API_KEY"
-api_style = "anthropic"
+name = "internal-ai-gateway"
+api_base = "https://internal-ai-gateway.mistralai.com"
+api_key_env_var = "LITELLM_API_KEY"
+api_style = "openai"
 backend = "generic"
-
-[providers.extra_headers]
-x-user = "vincent.pfister"
-
-[[providers]]
-name = "foundry-openai"
-api_base = "http://codex-foundry-proxy.tenant-slurm/openai/v1"
-api_key_env_var = "AZURE_OPENAI_API_KEY"
-api_style = "openai-responses"
-backend = "generic"
-
-[providers.extra_headers]
-x-user = "vincent.pfister"
 
 [[models]]
 name = "mistral-vibe-cli-latest"
@@ -92,26 +79,40 @@ output_price = 0.0
 thinking = "off"
 
 [[models]]
-name = "claude-opus-4-6"
-provider = "foundry-anthropic"
-alias = "opus-4.6"
+name = "vertex_ai/claude-opus-5-5"
+provider = "internal-ai-gateway"
+alias = "opus-5.5"
+temperature = 1.0
 thinking = "high"
+supports_images = true
+auto_compact_threshold = 800000
 
 [[models]]
-name = "claude-sonnet-4-6"
-provider = "foundry-anthropic"
-alias = "sonnet-4.6"
+name = "azure_ai/claude-sonnet-5-5"
+provider = "internal-ai-gateway"
+alias = "sonnet-5.5"
+temperature = 1.0
+thinking = "high"
+supports_images = true
+auto_compact_threshold = 800000
 
 [[models]]
-name = "claude-haiku-4-5"
-provider = "foundry-anthropic"
+name = "azure_ai/claude-haiku-5-5"
+provider = "internal-ai-gateway"
 alias = "haiku"
+temperature = 1.0
+thinking = "high"
+supports_images = true
+auto_compact_threshold = 800000
 
 [[models]]
-name = "gpt-5.3-codex"
-provider = "foundry-openai"
-alias = "codex"
+name = "azure_ai/gpt-6.1-sol"
+provider = "internal-ai-gateway"
+alias = "gpt-6.1-sol"
+temperature = 1.0
 thinking = "high"
+supports_images = true
+auto_compact_threshold = 800000
 
 [project_context]
 max_chars = 40000
