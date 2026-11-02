@@ -230,6 +230,11 @@ and project instructions and references under `projects/`, are local to the
 cluster and not tracked here. On RNO, the fleet code and project references
 link to `~/workspace/mistral_agent_ops/scripts/vpfister/agent_ops/`.
 
+Model provider: `.bashrc` and `.zshrc` source the tracked
+`~/.config/internal-ai-gateway/env.sh`, which routes Claude Code through the
+internal AI gateway. It reads `LITELLM_API_KEY` from the untracked `~/.env`;
+create that file on each new machine.
+
 `settings.json` invokes the optional local fleet and Herdr hooks only when
 their scripts exist. Other hook scripts it invokes must be tracked.
 

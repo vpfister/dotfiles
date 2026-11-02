@@ -44,21 +44,12 @@ alias tailscale=/Applications/Tailscale.app/Contents/MacOS/Tailscale
 
 export LS_COLORS="di=1;36:ln=35:so=32:pi=33:ex=31:bd=34;46:cd=34;43:su=30;41:sg=30;46:tw=30;42:ow=30;43"
 
-export CLAUDE_CODE_USE_FOUNDRY=1
-export CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1
 if [[ "$(uname)" == "Darwin" ]]; then
   # FOUNDRY_PROXY is consumed by ~/.config/opencode/opencode.jsonc
   export FOUNDRY_PROXY='https://foundry-proxy.cheetah-koi.ts.net'
-  export ANTHROPIC_FOUNDRY_BASE_URL='https://foundry-proxy.cheetah-koi.ts.net/anthropic'
 else
   export FOUNDRY_PROXY='http://codex-foundry-proxy.tenant-slurm'
-  export ANTHROPIC_FOUNDRY_BASE_URL='http://codex-foundry-proxy.tenant-slurm/anthropic'
 fi
-export ANTHROPIC_FOUNDRY_API_KEY='dont-worry-this-key-will-be-auto-injected'
-export ANTHROPIC_MODEL='claude-opus-5-5'
-export ANTHROPIC_DEFAULT_OPUS_MODEL='claude-opus-5-5'
-export ANTHROPIC_DEFAULT_SONNET_MODEL='claude-sonnet-4-6'
-export ANTHROPIC_DEFAULT_HAIKU_MODEL='claude-haiku-4-5'
 
 # cc shadows /usr/bin/cc interactively; build tools are unaffected
 alias cc='CLAUDE_CODE_DISABLE_AGENT_VIEW=1 claude'
@@ -67,7 +58,7 @@ if [[ "$(uname)" == "Linux" ]]; then
   alias cc='CLAUDE_CODE_DISABLE_AGENT_VIEW=1 "$HOME/.local/bin/with-agent-github" claude'
 fi
 
-# Codex CLI (Azure via foundry proxy)
+# Legacy Foundry clients
 export AZURE_OPENAI_API_KEY='dont-worry-this-key-will-be-auto-injected'
 
 # Linux agents inherit their Git config; Mac keeps its existing SSH setup.
@@ -120,3 +111,6 @@ fi
 # --- Shell completions (guarded) ---
 command -v uv &>/dev/null && eval "$(uv generate-shell-completion zsh)" || true
 alias visdiff="/Applications/VisualDiffer.app/Contents/Helpers/visdiff"
+
+# Coding-agent inference through the internal gateway.
+[ ! -r "$HOME/.config/internal-ai-gateway/env.sh" ] || . "$HOME/.config/internal-ai-gateway/env.sh"

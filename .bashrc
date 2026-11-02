@@ -99,17 +99,7 @@ if [[ -f /mnt/vast/shared/config/.bashrc ]]; then
   export SALLOC_ACCOUNT=discovery
   export MISTRAL_ROOT="$HOME/workspace/mistral"
 
-  # Anthropic/Claude env vars (Foundry-specific)
-  export CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1
-  export CLAUDE_CODE_USE_FOUNDRY=1
-  export ANTHROPIC_FOUNDRY_API_KEY='dont-worry-this-key-will-be-auto-injected'
-  export ANTHROPIC_FOUNDRY_BASE_URL=http://codex-foundry-proxy.tenant-slurm/anthropic
-  #export ANTHROPIC_MODEL='claude-opus-4-8'
-  export ANTHROPIC_MODEL='claude-opus-5-5'
-  export ANTHROPIC_DEFAULT_OPUS_MODEL='claude-opus-5-5'
-  export ANTHROPIC_SMALL_FAST_MODEL='claude-haiku-4-5@20251001'
-
-  # codex
+  # Legacy Foundry clients
   export AZURE_OPENAI_API_KEY='dont-worry-this-key-will-be-auto-injected'
 fi
 
@@ -145,14 +135,6 @@ if [[ "$(uname)" == "Darwin" ]]; then
   export SSH_AUTH_SOCK="$HOME/Library/Containers/com.maxgoedjen.Secretive.SecretAgent/Data/socket.ssh"
 
   alias tailscale=/Applications/Tailscale.app/Contents/MacOS/Tailscale
-
-  export CLAUDE_CODE_USE_FOUNDRY=1
-  export CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1
-  export ANTHROPIC_FOUNDRY_BASE_URL='https://foundry-proxy.cheetah-koi.ts.net/anthropic'
-  export ANTHROPIC_FOUNDRY_API_KEY='dont-worry-this-key-will-be-auto-injected'
-  export ANTHROPIC_DEFAULT_OPUS_MODEL='claude-opus-5-5'
-  export ANTHROPIC_DEFAULT_SONNET_MODEL='claude-sonnet-4-6'
-  export ANTHROPIC_DEFAULT_HAIKU_MODEL='claude-haiku-4-5'
 else
   # Linux/remote: pin SSH_AUTH_SOCK to a stable symlink, updated on each login.
   # Existing shells (tmux, etc.) follow the symlink to the newest forwarded agent.
@@ -218,3 +200,6 @@ export PATH="$HOME/.opencode/bin:$PATH"
 for _f in $HOME/.config/herdr/plugins/github/herdr-automatic-rename-*/shell/hook.bash; do
   [ -r "$_f" ] && { source "$_f"; break; }
 done
+
+# Coding-agent inference through the internal gateway.
+[ ! -r "$HOME/.config/internal-ai-gateway/env.sh" ] || . "$HOME/.config/internal-ai-gateway/env.sh"
