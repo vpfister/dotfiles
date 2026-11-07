@@ -162,7 +162,8 @@
       "Bash(herdr-synapse post:*)",
       "mcp__buildkite__retry_failed_jobs",
       "mcp__buildkite__retry_job",
-      "mcp__buildkite__rebuild_build"
+      "mcp__buildkite__rebuild_build",
+      "mcp__buildkite__create_build"
     ],
     "deny": [
       "Bash(find * -delete*)",
