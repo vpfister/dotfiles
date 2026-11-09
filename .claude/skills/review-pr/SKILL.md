@@ -38,6 +38,10 @@ decision, or an edit spanning files. Do not dress those as suggestions — a sug
 - **Batch into one review** (`POST .../reviews` with a `comments[]` array and
   `"event": "COMMENT"`) so the author gets a single notification, with the summary and any
   table in the review `body`.
+- Prepare review JSON in a separate tool call, then submit with `gh api .../reviews
+  --input /absolute/path.json`. The permission hook must inspect the file before
+  submission; generating and posting it in one shell command is rejected with
+  instructions to prepare the file separately and retry.
 - Suggestions bind to `commit_id`. Once the author pushes, they go outdated and the Apply
   button disappears, so post close to when they will be read.
 
