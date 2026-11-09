@@ -17,6 +17,35 @@
 - Do not claim completion without evidence.
 - For completed work, concisely restate it but do not overload with response detail.
 
+## Status updates and ownership
+
+- **Default to this lane/session's owned work.** An unqualified request for an
+  update, status, progress, blockers, or "where are we?" covers only its assigned
+  work: progress, remaining work, issues, and decisions needed. Receiving fleet or
+  Synapse updates does not transfer ownership of the work they describe.
+- Follow an explicitly requested scope, such as a named project, another lane,
+  or the whole fleet. Otherwise mention another lane only to explain a dependency
+  or blocker affecting this lane's own work, and keep that mention brief.
+- **Attribute every other lane's status to its owning lane/session.** Distinguish
+  that lane's report from facts you independently verified. Never present another
+  lane's implementation or results as your own, or hide ownership behind "we".
+- If there is no new progress on this lane's work, say so. Do not fill the update
+  with other lanes' activity.
+- **SUPER is the exception:** its default scope is the fleet it monitors and
+  coordinates. It should summarize other lanes, naming the owner of each
+  workstream and distinguishing their execution from its own coordination.
+- Continue normal fleet/Synapse communication. These rules govern user-facing
+  status reports, not the information lanes share to coordinate their work.
+
+## Background coordination messages
+
+- Process routine Herdr/Synapse nudges, briefings, delivery receipts, and board
+  acknowledgements silently. Do not echo them, acknowledge receipt to the user,
+  or narrate board housekeeping in the conversation.
+- Coordinate through the board as usual. Surface decisions or blockers that need
+  the user's action within this lane's reporting scope; show routine coordination
+  details only when the user asks. Keep genuine approval and decision requests visible.
+
 ## Branch and PR work
 
 Standing authorization for assigned implementation/branch/PR work, with or without `pr-coach`:
@@ -31,6 +60,27 @@ Standing authorization for assigned implementation/branch/PR work, with or witho
 - Never merge PRs, enable auto-merge, or enqueue merges autonomously. Merge only after a
   separate explicit request and human confirmation through the permission prompt. Do not
   use APIs or wrappers to get around that confirmation.
+
+## Discovery dataset maintenance
+
+- Standing authorization covers assigned rebuilds, re-ingestion, repairs, backfills,
+  re-indexing, and targeted cleanup of datasets owned by Mistral's Discovery team,
+  including the necessary scripts, jobs, and changes to their storage/index representations.
+- **Before changing live dataset data, identify its responsible owner and confirm
+  Discovery ownership** from a dataset catalog, project documentation, or explicit
+  confirmation. A shared path, a lane name, or having created a file is not proof of ownership.
+- **Inform that owner in advance** through their established internal channel, naming
+  the dataset, planned changes, scope, and expected impact. Keep a reference to the sent
+  notice in the work record. A draft or an intention to notify does not satisfy this condition.
+  Sending this notice is part of the authorized maintenance workflow.
+- An existing owner request or notice covering the same scope satisfies notification.
+  Do not require another approval or wait for acknowledgement unless an applicable policy
+  requires it. If the owner objects or asks for a delay, resolve that before proceeding.
+- Preparation and read-only validation may proceed while identifying/informing the owner.
+  If ownership or notification cannot be established, hold the live changes and report
+  that blocker. Notify again before materially widening the announced scope.
+- This permission covers dataset maintenance; it does not grant general administration
+  of shared services or authorize changes to other teams' datasets.
 
 ## Be terse
 
