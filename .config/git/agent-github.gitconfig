@@ -25,3 +25,12 @@
     helper = !gh auth git-credential
     useHttpPath = true
     username = vpfister
+
+# Own namespace: a prefix rule on purpose, so every vpfister repo is covered.
+[url "https://github.com/vpfister/"]
+    insteadOf = git@github.com:vpfister/
+    insteadOf = ssh://git@github.com/vpfister/
+[credential "https://github.com/vpfister"]
+    helper =
+    helper = !gh auth git-credential
+    username = vpfister
