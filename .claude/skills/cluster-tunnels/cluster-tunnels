@@ -31,11 +31,11 @@ DEST_USER="vincent.pfister"
 #   laptop_local_port  : port on the laptop for the -L forward to <ssh-host>:22
 #   source_remote_port : port on SOURCE_HOST that maps back to <ssh-host>
 DESTINATIONS=(
-  "ala   2200  12222"   # personal login pod (laptop alias `ala`); ephemeral — the rno
-                        # `ala` config uses a churn-tolerant host-key policy, not HostKeyAlias
+  "ala   2200  12222"   # personal ALA login pod (laptop alias `ala`); ephemeral — rno config for
+                        # `ala`/`sko` uses a churn-tolerant host-key policy, not HostKeyAlias
   "bar   2201  12223"
   "blc-login-0  2202  12225"   # GB300 shared login pod (Tailscale MagicDNS name; same alias on rno)
-  "sko0         2203  12226"   # SKO/eun-05a shared login pod (laptop `sko0` -> slurm-sko-login-0)
+  "sko          2203  12226"   # personal SKO login pod (laptop alias `sko`); ephemeral like `ala`
 )
 
 # Expose the laptop's OWN sshd back to the source, so the source can
