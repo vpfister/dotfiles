@@ -1,6 +1,6 @@
 ---
 name: cluster-tunnels
-description: Use when you need to reach, ssh into, run commands on, or copy files to/from one compute cluster from another that cannot route to each other directly (e.g. from rno to ala0 or bar0), or when setting up / debugging the laptop-relayed SSH tunnels that bridge them. Symptoms include `ssh ala0` failing from a cluster, kex_exchange_identification errors, or "remote port forwarding failed".
+description: Use when you need to reach, ssh into, run commands on, or copy files to/from one compute cluster from another that cannot route to each other directly (e.g. from rno to ala, sko, bar or blc-login-0), or when setting up / debugging the laptop-relayed SSH tunnels that bridge them. Symptoms include `ssh ala` / `ssh sko` failing from a cluster, kex_exchange_identification errors, or "remote port forwarding failed".
 ---
 
 # Cluster-to-cluster SSH tunnels (laptop relay)
@@ -12,7 +12,7 @@ Clusters that can't reach each other directly are bridged through the **laptop**
 source(rno):<rport>  --(-R)-->  laptop:<lport>  --(-L)-->  dest:22   # reach a dest
 source(rno):<rport>  --(-R)-->  laptop:22                            # reach the laptop ("mac")
 ```
-Currently wired: `rno -> ala0`, `rno -> bar0`, and `rno -> mac` (the laptop itself).
+Currently wired from rno: `ala` and `sko` (personal login pods), `bar`, `blc-login-0`, and `mac` (the laptop itself). The shared `ala0`/`bar0`/`sko0` pods were removed 2026-11-19; the laptop's `ala`/`sko`/`bar` aliases come from Iru SSHConfigBuilder (`~/.ssh/mistral/<cluster>`).
 
 **Full reference / history:** Notion page *"SSH Tunnel Between Two Clusters (rno ↔ ala0) via Laptop"* — https://app.notion.com/p/3876ba59a7fe81ceb95cce8f48ef7c7d
 
@@ -21,7 +21,7 @@ Currently wired: `rno -> ala0`, `rno -> bar0`, and `rno -> mac` (the laptop itse
 The source cluster cannot open the tunnels itself (it can't route to the laptop or the destinations). Every forward originates on the laptop. Therefore:
 
 - **To bring tunnels up/down:** run `cluster-tunnels` on the **laptop**.
-- **If `ssh ala0` fails from the source cluster** (e.g. you are running on rno): the cause is almost always that the laptop-side tunnels are down. You **cannot** fix it from the source side — ask the user to run `cluster-tunnels up` on their laptop, then retry.
+- **If `ssh ala` (or any destination) fails from the source cluster** (e.g. you are running on rno): the cause is almost always that the laptop-side tunnels are down. You **cannot** fix it from the source side — ask the user to run `cluster-tunnels up` on their laptop, then retry.
 
 ## Setup / manage tunnels — on the laptop (zsh)
 
@@ -46,16 +46,17 @@ cluster-tunnels config   # print only the source-side ~/.ssh/config block
 
 `cluster-tunnels config` prints blocks to paste into `~/.ssh/config` on the source cluster:
 ```
-Host ala0
+Host bar
     HostName 127.0.0.1
-    Port 12222
+    Port 12223
     User vincent.pfister
-    HostKeyAlias ala0-via-tunnel
+    HostKeyAlias bar-via-tunnel
     StrictHostKeyChecking accept-new
     ControlMaster auto
     ControlPath ~/.ssh/sockets/%C
     ControlPersist 60m
 ```
+For personal login pods (`ala`, `sko`) replace the two host-key lines with `StrictHostKeyChecking no` + `UserKnownHostsFile /dev/null`: a recreated pod gets a fresh host key, which a pinned `HostKeyAlias` rejects.
 Create the socket dir once on the source (else `unix_listener: cannot bind to path ...`):
 ```
 mkdir -p ~/.ssh/sockets && chmod 700 ~/.ssh/sockets
@@ -65,12 +66,12 @@ mkdir -p ~/.ssh/sockets && chmod 700 ~/.ssh/sockets
 
 Once tunnels are up and the config is in place, each destination is just a normal ssh host on the source:
 ```
-ssh ala0 'nvidia-smi'                   # run a command on ala0
-ssh ala0 'cd ~/proj && sbatch job.sh'   # quote the remote command
-scp ./file ala0:~/dest/                 # copy TO ala0
-scp ala0:~/remote/file ./               # copy FROM ala0
-rsync -avz ./dir/ ala0:~/dir/           # rsync over the tunnel
-ssh bar0 'hostname'                     # same for bar0
+ssh ala 'nvidia-smi'                    # run a command on ala
+ssh ala 'cd ~/proj && sbatch job.sh'    # quote the remote command
+scp ./file ala:~/dest/                  # copy TO ala
+scp ala:~/remote/file ./                # copy FROM ala
+rsync -avz ./dir/ ala:~/dir/            # rsync over the tunnel
+ssh sko 'hostname'                      # same for sko / bar / blc-login-0
 ```
 `ControlPersist` keeps the master warm, so repeated commands reuse one connection (≈ one Touch ID per 60-min window per host).
 
