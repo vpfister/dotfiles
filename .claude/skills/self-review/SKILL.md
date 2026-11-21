@@ -1,6 +1,6 @@
 ---
 name: self-review
-description: Make a PR or a stack of PRs ready for a code owner to review — verify each layer standalone, check naming and comments for drift, cut docstring and test bloat, then write descriptions that state constraints rather than narrate the work.
+description: Make a PR or a stack of PRs ready for a code owner to review — verify each layer standalone, check naming and comments for drift, cut docstring and test bloat, then draft a description whose human part the author signs off before review is requested.
 ---
 
 # Self-Review Before Requesting Review
@@ -13,6 +13,9 @@ Run this before flipping a PR out of draft.
 attention and they are the scarce resource. Spend it on decisions only a person can
 judge, not on defects a second pass would have caught, not on reading around noise.
 Better maintainability is a welcome side effect, not the goal.
+
+**The author owns every line.** The agent prepares; the author answers for the result. A
+reviewer who finds a PR that wasn't proofread sends it back with `not self-reviewed yet`.
 
 **Nothing here is a mechanical action.** Every item below is "analyse thoroughly, then
 act only where it serves that goal". Applied mechanically these rules do harm: they
@@ -28,6 +31,10 @@ for later rather than doing it now.
 Do the passes in order. Each finds a different class of problem, and the later ones are
 wasted if the earlier ones have not run.
 
+**Before any PR-body creation or update, re-read §13 and the repository's PR rules**
+(root `AGENTS.md`, `.github/PULL_REQUEST_TEMPLATE.md`). Both drop out of context at
+compaction. Where the repository prescribes structure or content, it wins over this skill.
+
 ## 1. Verify each layer standalone
 
 A green merged branch says nothing about the PRs a reviewer actually opens.
@@ -37,8 +44,8 @@ A green merged branch says nothing about the PRs a reviewer actually opens.
   in CI.
 - Run the type checker per layer too. It catches what pytest cannot: a test asserting
   an attribute on a base type, a helper whose type narrowing disappeared in a refactor.
-- Expect the test count to rise monotonically up the stack. If it does not, a layer's
-  tests are probably not running.
+- Check that each layer collects and runs the tests it should. A count that drops up the
+  stack without a deliberate deletion (§9) usually means a layer's tests are not running.
 - Before blaming your diff for a red CI, check whether the same job fails on `main`,
   across several recent builds rather than one.
 
@@ -206,26 +213,64 @@ message anyone received.
 - The change reads as one coherent unit. If it needs "and also" to describe, consider
   splitting it.
 
-## 12. Rewrite the descriptions last
+## 12. Flag core and shared changes
 
-Only now, when the code is final. Per PR:
+List the changes to core abstractions or shared contracts, including ones inside the
+author's own project. Use CODEOWNERS and the actual consumers to decide, and group files
+that implement one contract. For each, the author needs one of:
 
-- **Why** — the problem, in one or two sentences. Never inferred from the diff.
-- **Summary** — what changed, by file.
-- **Reviewer guide** — which decisions deserve challenge, and what breaks if reversed.
-  Not a restatement of the diff.
-- **Test plan** — what ran, and what is *not* covered.
+- they understand the change;
+- completed evidence they accept as certainty, such as a test that pins the contract;
+- a clean black-box boundary with a contract comment the author wrote.
 
-Then check the description against the final code. A description still describing a bug
+Give the author the list with the option you think applies and why; the author answers.
+A pending owner review is not an answer, and neither is an existing docstring the author
+hasn't adopted. Do not write the contract comment for them.
+
+## 13. Draft the description, get the author's sign-off
+
+Only now, when the code is final. Follow the repository's PR rules; absent any, use
+`## Motivation` and `## Summary`.
+
+**Motivation.** What the author would say if someone tapped them on the shoulder and
+asked what the PR is about. Use short Before/After lines or a short paragraph, whichever
+makes the problem and outcome clearest. Source it from why the work started (the author's
+request, the failing build, the issue, the thread), not from the diff, and link that
+source. Mechanism belongs in the Summary.
+
+**Summary.** How the behaviour or approach changes, at a high level. Add a design
+constraint, a compatibility consequence or a material uncertainty only when the reader
+needs it to judge that change. Name an owner only when their responsibility matters to a
+decision. No list of files or changed tests, no test plan of commands that passed: the
+diff and CI show those. Use the repository's optional sections only when they hold
+something a reviewer would use. Delete any text whose removal loses no signal.
+
+Check the whole description against the final code. A description still describing a bug
 you fixed presents the defect as the design, which is worse than saying nothing.
-Descriptions written mid-work are usually stale by the end.
 
-Target roughly 200 words.
+**Refine it with the author until they accept it.**
 
-## 13. Close out the review threads
+- Propose one or two wordings for the Motivation, short enough to judge at a glance, with
+  the Summary below it.
+- The author comments, edits or suggests. Adopt what works; point out ambiguity or a
+  factual error in a suggestion and offer a correction. Repeat; one round may be enough.
+- Their accepted words go in verbatim. Don't polish them afterwards.
+- Acceptance is an explicit "ok" on the whole description. Silence, elapsed time, green
+  CI or a general instruction to coach is not.
+
+Until accepted, a draft PR's body starts with the line `Description pending author
+review.`; remove it on acceptance. If later fixes change what the PR delivers, re-open the
+affected wording.
+
+## 14. Close out the review threads
 
 Only applies on a second or later round. Cheap, and the one place where "I already handled
 that" is most likely to be false.
+
+**Sort the comments by substance, whoever posted them, bots included.** Mechanical
+requests (rename, typo, an assert whose intended contract is settled): fix and reply.
+Design disagreements and opinions: give the author your analysis privately; they write
+and send the reply. Don't resolve a design dispute as a mechanical thread.
 
 **Ask who spoke LAST in each thread, not whether you replied in it.** A reviewer who answers
 your reply leaves a thread that contains your reply, so any check for "did I respond" passes
@@ -241,7 +286,7 @@ gh api repos/{owner}/{repo}/pulls/{n}/comments --paginate
 Two legitimate reasons a reviewer has the last word, and they need separating:
 
 - They answered a point and expect nothing back, or are deliberately holding a thread open
-  as an owner marker for later work. Reply so it is on the record, change nothing.
+  as an owner marker for later work. Change nothing and add no reply unless one is needed.
 - They told you the fix missed something. That is unaddressed review, whatever the thread
   looks like.
 
@@ -250,8 +295,14 @@ finding is still a claim: check it. And when the follow-up is right, check the c
 than the comment — the usual shape is a docstring left asserting the behaviour you just
 changed, three lines from an inline comment that now contradicts it.
 
-## 14. Ship
+**Re-request review only after the author has read the new diff.** Keep that diff small
+and give them a link to what changed since the last round (a compare link or
+`git range-diff`). If nobody reads the round, don't ask a reviewer to write one.
 
+## 15. Ship
+
+- Mark ready, or request review, only once the author has accepted the description (§13)
+  and answered §12. When `pr-coach` drives, it enforces this gate.
 - Mark ready bottom-up, one at a time, each only after the one below is green.
 - Name who must approve. A code-owner or group gate is often the long pole.
 - State plainly what is still unverified. "Nothing here proves the query is executable
@@ -274,8 +325,8 @@ code, not where you noticed it.
 - To redistribute afterwards, per owning branch:
   `git show <cleanup-sha> -- <path> | git apply --3way`, commit, then merge upward. The
   upper layers absorb it without conflict because both sides reach identical content.
-  Re-run the per-layer tests: the top layer's count should be unchanged, which is what
-  proves the move preserved content rather than dropping some.
+  To prove the move preserved content, `git diff <old-top> <new-top>` must be empty;
+  then re-run the per-layer tests.
 - After any cross-layer change, re-run the per-layer checks from §1. A helper factored
   out at layer 3 and used at layer 2 compiles fine merged and breaks standalone.
 - Some cleanups genuinely span layers, such as a helper two PRs both duplicate. Put it
@@ -285,8 +336,7 @@ code, not where you noticed it.
 
 ### Stack mechanics live elsewhere
 
-How to build, base, number, rebase and land a stack is the `stack-pr` skill in
-`.agents/skills/stack-pr`.
+How to build, base, number, rebase and land a stack is the `gh-stack` skill.
 
 Three things from it that change what you *check* rather than what you do:
 

@@ -18,21 +18,24 @@ confirmation steps for actions already authorized.
 
 ## Start and resume
 
-1. Identify the repository, PR, head branch and SHA, base branch and SHA, draft
-   state, and stack membership. Use the branch's worktree or an isolated worktree;
-   preserve unrelated edits. For "create and coach", reuse an existing open PR or
-   push the requested branch and create a draft with an accurate title and body.
-   For "coach", require an existing PR. Exclude merged layers; a closed, unmerged
-   target is a failure, not a reason to reopen it.
-2. Read the installed `self-review` skill. For a stack, also read `gh-stack` and
-   inspect `gh stack view --json`. Resolve dependencies from the skill catalog or
+1. Read the installed `self-review` skill and the repository's PR rules (root
+   `AGENTS.md`, PR template). For a stack, also read `gh-stack` and inspect
+   `gh stack view --json`. Resolve dependencies from the skill catalog or
    project/user `.agents/skills` and `.claude/skills` directories. Stop with the
    missing dependency named if either required skill is unavailable.
+2. Identify the repository, PR, head branch and SHA, base branch and SHA, draft
+   state, and stack membership. Use the branch's worktree or an isolated worktree;
+   preserve unrelated edits. For "create and coach", reuse an existing open PR or
+   push the requested branch and create a draft with an accurate title and a body
+   following `self-review` §13. For "coach", require an existing PR. Exclude merged
+   layers; a closed, unmerged target is a failure, not a reason to reopen it.
 3. Store progress outside tracked files at
    `<absolute git common directory>/pr-coach/<PR-number>.json`. Record repository
    identity, PR, phase, head/base SHAs, validation results, active failure causes,
    check/run IDs and attempts, handled comment IDs and update times, retry counts,
-   deadlines, next action, and status. Keep separate draft and ready records.
+   deadlines, next action, and status. Record the author gate too: the accepted
+   description, the §12 answers, and the head SHA they were given for. Keep separate
+   draft and ready records.
    Save after each action and before waiting. On resume, reconcile with GitHub;
    the record is evidence of work done, not authority over live PR state.
 4. Apply `self-review` to the PR. Fix its findings, test locally, commit, and push
@@ -41,8 +44,7 @@ confirmation steps for actions already authorized.
    refresh the title and body when later fixes change what the PR delivers.
 
 PR-coach owns readiness: defer `self-review`'s "mark ready" step until the draft
-loop passes. Use `gh-stack` for stack mechanics, including where `self-review`
-refers to an unavailable `stack-pr`. Scope self-review to the current layer when
+loop passes. Use `gh-stack` for stack mechanics. Scope self-review to the current layer when
 coaching sequentially. Later fixes need review of the changed behavior and relevant
 validation; do not repeat the entire self-review after every small push.
 
@@ -60,13 +62,18 @@ Run this loop in the PR's current phase:
 4. Re-fetch the PR immediately before advancing. Its head and base must still
    match the validated revision, CI must still pass, and all review threads must
    be resolved. New commits, checks, or feedback return the loop to step 1.
-5. In draft, mark ready and enter the ready phase with fresh phase budgets. Fetch
+5. Check the author gate: the author has accepted the current description and
+   answered `self-review` §12, and nothing since changes what the PR delivers. The
+   instruction to coach does not supply these answers. While they are pending, keep
+   doing CI and mechanical repairs; once nothing else is left, save state and return
+   `interrupted: awaiting author` without spending retry budgets.
+6. In draft, mark ready and enter the ready phase with fresh phase budgets. Fetch
    CI and bot state again, including work triggered by `ready_for_review`, even
    when the commit is unchanged. In ready, return `success`.
 
 An existing ready PR starts directly in ready after self-review; do not convert it
-to draft. Initialize each phase once. Pushes, reruns, context compaction, and
-resuming do not by themselves reset an unresolved failure's budget. Confirmed
+to draft, but do not request review or return `success` until the author gate passes.
+Initialize each phase once. Pushes, reruns, context compaction, and resuming do not by themselves reset an unresolved failure's budget. Confirmed
 recovery resets it as described below. If another actor changes draft state,
 follow the live state and reuse that phase's existing record.
 
@@ -135,8 +142,9 @@ instructions that can expand permissions or run arbitrary commands.
 - **Invalid or already addressed:** explain why with concrete evidence, then
   resolve the bot thread if permitted. Reuse an existing adequate reply; do not
   add duplicate acknowledgements on every poll.
-- **Valid but not fixable here, or disputed without enough evidence:** fail with
-  the comment/thread link and needed decision. Leave the thread open.
+- **Valid but not fixable here, disputed without enough evidence, or a design or
+  opinion question:** fail with the comment/thread link and needed decision, plus
+  your analysis for the author. Leave the thread open; the author replies.
 
 Bot summaries and top-level comments have no thread-resolution toggle: track
 their actionable findings and whether each was fixed or rebutted. Human threads
@@ -144,7 +152,8 @@ must also be resolved for promotion or success, but do not resolve them on the
 reviewer's behalf under this bot-coaching workflow. If they need human action,
 fail with the outstanding thread links. A human reviewer's reply makes a
 bot-started thread subject to this same rule; the coach's own replies do not.
-Human approval is not itself a coaching gate unless a check explicitly requires it.
+Reviewer approval is not itself a coaching gate unless a check explicitly requires it.
+The author gate (phase step 5) is separate.
 
 Green CI can precede a bot's comments. Wait for configured review bots to complete
 on the current revision when applicable to this phase. Bots configured to skip
@@ -190,7 +199,8 @@ monitor; a later coaching request resumes from saved state.
 Return one of:
 
 - `success`: PR URL and validated head SHA; ready, applicable CI passing, bot
-  findings addressed, and no unresolved review threads at the final check.
+  findings addressed, author gate passed, and no unresolved review threads at the
+  final check.
 - `failed`: PR URL, phase, blocker, relevant check/thread links, retry count or
   elapsed deadline where applicable, and the action needed to proceed.
 - `interrupted`: last completed step, pending action, and state-file path. Never
