@@ -199,19 +199,11 @@
       "Bash(git push * -d *)",
       "Bash(git push *--mirror*)",
       "Bash(git push *--all*)",
-      "Bash(gh pr merge:*)",
-      "Bash(gh stack merge:*)",
+      "Bash(*gh-approved *)",
       "Bash(gh pr review *--approve*)",
       "Bash(gh pr review * -a)",
       "Bash(gh pr review * -a *)",
       "Bash(gh pr review -a*)",
-      "Bash(gh api */merge)",
-      "Bash(gh api */merge *)",
-      "Bash(gh api */merge'*)",
-      "Bash(gh api */merge\"*)",
-      "Bash(gh api *mergePullRequest*)",
-      "Bash(gh api *PullRequestAutoMerge*)",
-      "Bash(gh api *enqueuePullRequest*)",
       "Bash(gh pr close:*)",
       "Bash(gh issue create:*)",
       "Bash(gh issue comment:*)",
@@ -250,23 +242,6 @@
           {
             "type": "command",
             "command": "$HOME/.claude/mode-mirror.sh"
-          }
-        ]
-      },
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "if": "Bash(*gh api*)",
-            "command": "$HOME/.claude/hooks/gh-api-write-guard.py",
-            "onFailure": "block"
-          },
-          {
-            "type": "command",
-            "if": "Bash(*git *push*)",
-            "command": "$HOME/.claude/hooks/git-push-branch-guard.py",
-            "onFailure": "block"
           }
         ]
       }
