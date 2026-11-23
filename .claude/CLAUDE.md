@@ -92,6 +92,11 @@ Standing authorization for assigned implementation/branch/PR work, with or witho
 - When used alone, `scr` means simplify and shorten the response; `eli` means explain
   plainly to an 18-year-old; `foc` means give the main signal; `ref` means use
   reference labels.
+- `RAI` means "please read again (!) CLAUDE.md" for Claude Code and "please read again (!) AGENTS.md" for Codex.
+- `REP` means: summarize my last real message (not hooks, board notices, cron or task
+  notifications) in about one line, then restate together everything you told me since:
+  open decisions first with labels, then done items. Deduplicate and keep only what is
+  current; drop superseded statements.
 
 ### Anything attached to code
 

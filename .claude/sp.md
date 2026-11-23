@@ -78,6 +78,7 @@ scr = `Simplify, compress, and repeat your response.`
 eli = `Explain this like I'm 18. Simplify your language. Shorten your response.`
 foc = `Focus on what matters most here. Whats the true signal? Whats the true value? Boil your response down into the most important thing we need to focus on.`
 ref = `Rewrite your responses with reference points`
+REP = `Summarize my last real message (not hooks, board notices, cron or task notifications) in about one line. Then restate together everything you told me since: open decisions first with labels, then done items. Deduplicate and keep only what is current; drop superseded statements.`
 
 ### Examples
 
